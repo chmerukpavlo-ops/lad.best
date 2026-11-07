@@ -1,0 +1,17 @@
+# Merge selectively into your project's .gitignore BEFORE secrets and git add.
+# This is a template, not a replacement for an existing .gitignore.
+.env*
+!.env.example
+node_modules/
+.next/
+.vercel/
+out/
+coverage/
+*.tsbuildinfo
+*.log
+.DS_Store
+# Local Supabase state/backups; keep reviewed migrations tracked.
+supabase/.temp/
+supabase/.branches/
+*.dump
+# If a secret was already committed, ignoring it is not enough: rotate it.

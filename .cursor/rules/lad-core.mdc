@@ -1,0 +1,16 @@
+---
+description: Канонічні правила проєкту Лад (SPEC v1.1, gate, безпека)
+alwaysApply: true
+---
+
+# Лад — core
+
+- Читай `docs/SPEC.md`, `docs/BUSINESS_RULES.md`, `docs/IMPLEMENTATION_PLAN.md`, `docs/PROGRESS.md`, `AGENTS.md` перед змінами обсягу.
+- SPEC v1.1 > старі вимоги. Немає profit shares / payouts / боргів у v1.
+- Оголошення: одна модель, кольори текстом. Реклама на оголошенні, не `sales.ad_cost`.
+- Повернення (BR §7) не реалізовувати без явного погодження.
+- Gate 1 = основа. Таблиці listings/ads/sales/calendar — лише на відповідних наступних gate.
+- Auth (погоджено): email+password, recovery email, без публічного signup.
+- Не виконуй SQL/міграції/deploy/підключення Supabase без окремого дозволу.
+- Не зберігай секрети в репо. Не використовуй `service_role` у звичайному UI-потоці.
+- Після перевіреної роботи оновлюй `PROGRESS.md` фактами (що перевірено / що ні).
