@@ -8,7 +8,6 @@ import {
 } from "@/app/actions/ads";
 import { AdPaymentCorrectForm } from "@/components/ads/ad-payment-form";
 import { CardSurface } from "@/components/ui/card-surface";
-import { requireVerifiedUser } from "@/lib/auth/require-user";
 import {
   dbAmountToKopiyky,
   formatUahDisplay,
@@ -23,7 +22,6 @@ type PageProps = {
 };
 
 export default async function AdPaymentDetailPage({ params }: PageProps) {
-  await requireVerifiedUser({ withUserRecord: true });
   const { id } = await params;
   const [paymentResult, membersResult] = await Promise.all([
     getAdPayment(id),

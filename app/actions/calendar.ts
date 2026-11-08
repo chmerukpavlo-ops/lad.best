@@ -25,11 +25,9 @@ import type {
   ScheduleSettings,
 } from "@/lib/calendar/types";
 import { emptyToNull, validateEventInput } from "@/lib/calendar/validation";
-import { requireVerifiedUser } from "@/lib/auth/require-user";
+import { getMemberGate } from "@/lib/auth/member-gate";
 import { parsePositiveInt } from "@/lib/listings/validation";
 import { resolveOptimisticUpdate } from "@/lib/listings/version";
-import { getMembershipWorkspace } from "@/lib/listings/workspace";
-import { createClient } from "@/lib/supabase/server";
 
 const EVENT_SELECT =
   "id, workspace_id, participant_id, kind, starts_at, ends_at, note, version, deleted_at, created_by, updated_by, created_at, updated_at";
@@ -49,24 +47,22 @@ function fail(
   return { ok: false, code, message };
 }
 
-async function requireMemberClient() {
-  const user = await requireVerifiedUser({ withUserRecord: true });
-  const supabase = await createClient();
-  const membership = await getMembershipWorkspace(supabase, user.id);
-  if (!membership.ok) {
+async function requireMemberClient(strict = false) {
+  const gate = await getMemberGate(strict);
+  if (!gate.ok) {
     return {
       ok: false as const,
       state: fail(
-        membership.reason === "none" ? "unauthorized" : "error",
-        membership.message,
+        gate.reason === "unauthorized" ? "unauthorized" : "error",
+        gate.message,
       ),
     };
   }
   return {
     ok: true as const,
-    user,
-    supabase,
-    workspaceId: membership.workspaceId,
+    user: gate.user,
+    supabase: gate.supabase,
+    workspaceId: gate.workspaceId,
   };
 }
 
@@ -364,7 +360,7 @@ export async function createAvailabilityEvent(
   _prev: CalendarActionState | null,
   formData: FormData,
 ): Promise<CalendarActionState> {
-  const gate = await requireMemberClient();
+  const gate = await requireMemberClient(true);
   if (!gate.ok) return gate.state;
 
   const validated = validateEventInput({
@@ -415,7 +411,7 @@ export async function updateAvailabilityEvent(
   _prev: CalendarActionState | null,
   formData: FormData,
 ): Promise<CalendarActionState> {
-  const gate = await requireMemberClient();
+  const gate = await requireMemberClient(true);
   if (!gate.ok) return gate.state;
 
   const id = formString(formData, "id").trim();
@@ -479,7 +475,7 @@ export async function softDeleteAvailabilityEvent(
   _prev: CalendarActionState | null,
   formData: FormData,
 ): Promise<CalendarActionState> {
-  const gate = await requireMemberClient();
+  const gate = await requireMemberClient(true);
   if (!gate.ok) return gate.state;
 
   const id = formString(formData, "id").trim();

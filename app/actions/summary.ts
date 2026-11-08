@@ -1,7 +1,6 @@
 "use server";
 
-import { requireVerifiedUser } from "@/lib/auth/require-user";
-import { getMembershipWorkspace } from "@/lib/listings/workspace";
+import { getMemberGate } from "@/lib/auth/member-gate";
 import {
   dbAmountToKopiyky,
   dbSignedAmountToKopiyky,
@@ -26,7 +25,6 @@ import {
   collectTestListingIds,
   hasTestMarker,
 } from "@/lib/summary/test-markers";
-import { createClient } from "@/lib/supabase/server";
 
 export type TestDataReport = {
   listingCount: number;
@@ -58,16 +56,14 @@ export type ListingLifetimeReport = {
 };
 
 async function requireMember() {
-  const user = await requireVerifiedUser({ withUserRecord: true });
-  const supabase = await createClient();
-  const membership = await getMembershipWorkspace(supabase, user.id);
-  if (!membership.ok) {
-    return { ok: false as const, message: membership.message };
+  const gate = await getMemberGate(false);
+  if (!gate.ok) {
+    return { ok: false as const, message: gate.message };
   }
   return {
     ok: true as const,
-    supabase,
-    workspaceId: membership.workspaceId,
+    supabase: gate.supabase,
+    workspaceId: gate.workspaceId,
   };
 }
 

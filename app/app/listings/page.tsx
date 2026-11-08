@@ -3,7 +3,6 @@ import Link from "next/link";
 import { listListings } from "@/app/actions/listings";
 import { CardSurface } from "@/components/ui/card-surface";
 import { Button } from "@/components/ui/button";
-import { requireVerifiedUser } from "@/lib/auth/require-user";
 import type { Listing } from "@/lib/listings/types";
 import { cn } from "cn";
 
@@ -38,29 +37,16 @@ export default async function ListingsPage({
 }: {
   searchParams: SearchParams;
 }) {
-  await requireVerifiedUser({ withUserRecord: true });
   const params = await searchParams;
   const filter = parseFilter(params.status);
   const q = (params.q ?? "").trim().toLowerCase();
 
-  const [activeRes, archivedRes] = await Promise.all([
-    listListings("active"),
-    listListings("archived"),
-  ]);
+  const listStatus =
+    filter === "active" ? "active" : filter === "archived" ? "archived" : "all";
+  const listRes = await listListings(listStatus);
 
-  const loadError =
-    !activeRes.ok
-      ? activeRes.message
-      : !archivedRes.ok
-        ? archivedRes.message
-        : null;
-
-  let listings: Listing[] = [];
-  if (activeRes.ok && archivedRes.ok) {
-    if (filter === "active") listings = activeRes.listings;
-    else if (filter === "archived") listings = archivedRes.listings;
-    else listings = [...activeRes.listings, ...archivedRes.listings];
-  }
+  const loadError = listRes.ok ? null : listRes.message;
+  let listings: Listing[] = listRes.ok ? listRes.listings : [];
 
   if (q) {
     listings = listings.filter((l) => l.title.toLowerCase().includes(q));

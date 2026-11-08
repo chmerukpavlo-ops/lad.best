@@ -1,7 +1,8 @@
 # Лад — прогрес MVP v1.1
 
 ## Поточний стан
-**Gate 2–6 на `lad` застосовані.** Gate 7 (код): PWA manifest/іконки/SW без кешу `/app` і API; вихід чистить клієнтські caches; `docs/PUBLISH.md`. Deploy/DNS/Supabase Auth remote — не змінювались.
+**Gate 2–6 на `lad` застосовані.** Gate 7 + publish на `lad.best` (користувач підтвердив вхід/вихід/PWA).  
+**Perf-pass (код, 2026-11-08):** claims-first auth + React `cache` для member gate; без подвійного `getUser` на навігації; `listListings('all')` одним запитом; nav pending bar + `loading.tsx`. `tsc`/`eslint` ✅. Production redeploy — за дозволом.
 
 ## Gate 7 — перевірено локально (2026-11-08)
 | Перевірка | Результат |
@@ -21,9 +22,8 @@
 Міграція calendar applied; soft-delete / audit / outsider JWT — ✅ на `[TEST Gate6]`.
 
 ## Невиконані критичні перевірки (коротко)
-1. Встановлення PWA на iPhone і перевірка після виходу на пристрої.
-2. Повторний security/RLS/фінансовий обхід перед реальними даними.
-3. Production deploy + Auth redirect URLs на `lad.best` (лише за дозволом).
+1. Redeploy production після perf-pass (щоб `lad.best` підхопив).
+2. Повторна перевірка TTFB у Network після deploy.
 
 ## Наступна дія
-За дозволом: Vercel + DNS + Supabase Auth URLs за `docs/PUBLISH.md`; ручна PWA-перевірка на iPhone.
+За дозволом: commit + push + Vercel redeploy perf-pass.

@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 
 import { cn } from "cn";
 
+import { NavLink } from "@/components/app/nav-link";
 import {
   MOBILE_MORE_ITEM,
   WORKSPACE_NAV,
@@ -18,6 +20,8 @@ type WorkspaceShellProps = {
 
 export function WorkspaceShell({ children }: WorkspaceShellProps) {
   const pathname = usePathname();
+  const [navPending, setNavPending] = useState(false);
+  const [showBar, setShowBar] = useState(false);
   const desktopItems = WORKSPACE_NAV.filter((item) => item.desktop);
   const mobileBottom = mobileBottomItems();
   const showPlus =
@@ -35,6 +39,24 @@ export function WorkspaceShell({ children }: WorkspaceShellProps) {
         ? "/app/models"
         : "/app/listings/new";
 
+  const onPendingChange = useCallback((pending: boolean) => {
+    setNavPending(pending);
+  }, []);
+
+  useEffect(() => {
+    if (navPending) {
+      setShowBar(true);
+      return;
+    }
+    const t = window.setTimeout(() => setShowBar(false), 160);
+    return () => window.clearTimeout(t);
+  }, [navPending]);
+
+  useEffect(() => {
+    setNavPending(false);
+    setShowBar(false);
+  }, [pathname]);
+
   return (
     <div className="flex min-h-dvh bg-background">
       <aside className="sticky top-0 hidden h-dvh w-[12.75rem] shrink-0 flex-col border-r border-border/80 bg-[#101114] px-3 py-5 lg:w-[13.5rem] md:flex">
@@ -48,15 +70,14 @@ export function WorkspaceShell({ children }: WorkspaceShellProps) {
           {desktopItems.map((item) => {
             const active = item.match(pathname);
             return (
-              <Link
+              <NavLink
                 key={item.href}
                 href={item.href}
-                className={cn(
-                  "flex min-h-9 items-center gap-2.5 rounded-lg px-2.5 text-[13px] font-medium transition-colors",
-                  active
-                    ? "bg-[#1c1e24] text-foreground"
-                    : "text-muted-foreground hover:bg-[#1c1e24]/60 hover:text-foreground",
-                )}
+                active={active}
+                onPendingChange={onPendingChange}
+                className="flex min-h-9 items-center gap-2.5 rounded-lg px-2.5 text-[13px] font-medium transition-colors"
+                activeClassName="bg-[#1c1e24] text-foreground"
+                inactiveClassName="text-muted-foreground hover:bg-[#1c1e24]/60 hover:text-foreground"
               >
                 <span
                   className={cn(
@@ -66,13 +87,22 @@ export function WorkspaceShell({ children }: WorkspaceShellProps) {
                   aria-hidden
                 />
                 <span className="truncate">{navLabel(item, "desktop")}</span>
-              </Link>
+              </NavLink>
             );
           })}
         </nav>
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="relative flex min-w-0 flex-1 flex-col">
+        {showBar ? (
+          <div
+            className="pointer-events-none absolute inset-x-0 top-0 z-30 h-0.5 overflow-hidden bg-secondary"
+            aria-hidden
+          >
+            <div className="lad-nav-indeterminate h-full w-1/3 bg-primary" />
+          </div>
+        ) : null}
+
         <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b border-border/80 bg-background/95 px-4 backdrop-blur-md md:hidden">
           <Link
             href="/app"
@@ -81,13 +111,13 @@ export function WorkspaceShell({ children }: WorkspaceShellProps) {
             Лад
           </Link>
           {showPlus ? (
-            <Link
+            <NavLink
               href={plusHref}
+              onPendingChange={onPendingChange}
               className="inline-flex size-10 items-center justify-center rounded-xl bg-primary text-xl font-semibold leading-none text-primary-foreground"
-              aria-label="Додати"
             >
-              +
-            </Link>
+              <span className="sr-only">Додати</span>+
+            </NavLink>
           ) : (
             <span className="size-10" aria-hidden />
           )}
@@ -106,30 +136,32 @@ export function WorkspaceShell({ children }: WorkspaceShellProps) {
               const active = item.match(pathname);
               return (
                 <li key={item.href} className="min-w-0 flex-1">
-                  <Link
+                  <NavLink
                     href={item.href}
-                    className={cn(
-                      "flex min-h-11 flex-col items-center justify-center px-1 text-[11px] font-medium",
-                      active ? "text-primary" : "text-muted-foreground",
-                    )}
+                    active={active}
+                    onPendingChange={onPendingChange}
+                    className="flex min-h-11 flex-col items-center justify-center px-1 text-[11px] font-medium"
+                    activeClassName="text-primary"
+                    inactiveClassName="text-muted-foreground"
                   >
-                    <span className="truncate">{navLabel(item, "mobile")}</span>
-                  </Link>
+                    <span className="truncate">
+                      {navLabel(item, "mobile")}
+                    </span>
+                  </NavLink>
                 </li>
               );
             })}
             <li className="min-w-0 flex-1">
-              <Link
+              <NavLink
                 href={MOBILE_MORE_ITEM.href}
-                className={cn(
-                  "flex min-h-11 flex-col items-center justify-center px-1 text-[11px] font-medium",
-                  MOBILE_MORE_ITEM.match(pathname)
-                    ? "text-primary"
-                    : "text-muted-foreground",
-                )}
+                active={MOBILE_MORE_ITEM.match(pathname)}
+                onPendingChange={onPendingChange}
+                className="flex min-h-11 flex-col items-center justify-center px-1 text-[11px] font-medium"
+                activeClassName="text-primary"
+                inactiveClassName="text-muted-foreground"
               >
                 <span>{MOBILE_MORE_ITEM.label}</span>
-              </Link>
+              </NavLink>
             </li>
           </ul>
         </nav>

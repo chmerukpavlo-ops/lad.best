@@ -4,7 +4,6 @@ import { getWorkspacePeriodReport } from "@/app/actions/summary";
 import { PeriodPills } from "@/components/dashboard/period-pills";
 import { WeekChart } from "@/components/dashboard/week-chart";
 import { CardSurface } from "@/components/ui/card-surface";
-import { requireVerifiedUser } from "@/lib/auth/require-user";
 import { formatUahDisplay } from "@/lib/money/kopiyky";
 import { parseSummaryPeriod } from "@/lib/summary/period";
 
@@ -19,7 +18,6 @@ export default async function StatisticsPage({
 }: {
   searchParams: SearchParams;
 }) {
-  await requireVerifiedUser({ withUserRecord: true });
   const params = await searchParams;
   const periodKey = parseSummaryPeriod(params.period);
   const report = await getWorkspacePeriodReport(periodKey);

@@ -108,3 +108,16 @@
     @apply font-sans font-semibold;
   }
 }
+
+@keyframes lad-nav-indeterminate {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(400%);
+  }
+}
+
+.lad-nav-indeterminate {
+  animation: lad-nav-indeterminate 0.9s ease-in-out infinite;
+}

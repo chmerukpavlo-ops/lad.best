@@ -58,7 +58,7 @@ export default async function CalendarPage({
 }: {
   searchParams: SearchParams;
 }) {
-  const user = await requireVerifiedUser({ withUserRecord: true });
+  const user = await requireVerifiedUser();
   const params = await searchParams;
   const dayYmd = parseDay(params.day);
   const today = kyivTodayYmd();

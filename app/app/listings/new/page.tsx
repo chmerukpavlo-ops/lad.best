@@ -3,14 +3,12 @@ import Link from "next/link";
 import { createListing } from "@/app/actions/listings";
 import { ListingForm } from "@/components/listings/listing-form";
 import { CardSurface } from "@/components/ui/card-surface";
-import { requireVerifiedUser } from "@/lib/auth/require-user";
 
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
 export const revalidate = 0;
 
 export default async function NewListingPage() {
-  await requireVerifiedUser({ withUserRecord: true });
 
   return (
     <section className="flex flex-1 flex-col gap-6">

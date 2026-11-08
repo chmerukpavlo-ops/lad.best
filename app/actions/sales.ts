@@ -18,11 +18,9 @@ import {
   validateSaleCreate,
   validateSaleUpdate,
 } from "@/lib/sales/validation";
-import { requireVerifiedUser } from "@/lib/auth/require-user";
+import { getMemberGate } from "@/lib/auth/member-gate";
 import { parsePositiveInt } from "@/lib/listings/validation";
 import { resolveOptimisticUpdate } from "@/lib/listings/version";
-import { getMembershipWorkspace } from "@/lib/listings/workspace";
-import { createClient } from "@/lib/supabase/server";
 
 const SALE_SELECT =
   "id, workspace_id, listing_id, sale_price, cost_price, direct_expenses, color_text, size_text, note, executor_id, sold_on, status, margin, completed_on, completed_at, completed_by, correction_reason, version, client_request_id, complete_request_id, created_by, updated_by, created_at, updated_at";
@@ -36,24 +34,22 @@ function fail(code: SaleActionState["code"], message: string): SaleActionState {
   return { ok: false, code, message };
 }
 
-async function requireMemberClient() {
-  const user = await requireVerifiedUser({ withUserRecord: true });
-  const supabase = await createClient();
-  const membership = await getMembershipWorkspace(supabase, user.id);
-  if (!membership.ok) {
+async function requireMemberClient(strict = false) {
+  const gate = await getMemberGate(strict);
+  if (!gate.ok) {
     return {
       ok: false as const,
       state: fail(
-        membership.reason === "none" ? "unauthorized" : "error",
-        membership.message,
+        gate.reason === "unauthorized" ? "unauthorized" : "error",
+        gate.message,
       ),
     };
   }
   return {
     ok: true as const,
-    user,
-    supabase,
-    workspaceId: membership.workspaceId,
+    user: gate.user,
+    supabase: gate.supabase,
+    workspaceId: gate.workspaceId,
   };
 }
 
@@ -204,7 +200,7 @@ export async function createSale(
   _prev: SaleActionState | null,
   formData: FormData,
 ): Promise<SaleActionState> {
-  const gate = await requireMemberClient();
+  const gate = await requireMemberClient(true);
   if (!gate.ok) {
     return gate.state;
   }
@@ -296,7 +292,7 @@ export async function updateOpenSale(
   _prev: SaleActionState | null,
   formData: FormData,
 ): Promise<SaleActionState> {
-  const gate = await requireMemberClient();
+  const gate = await requireMemberClient(true);
   if (!gate.ok) {
     return gate.state;
   }
@@ -401,7 +397,7 @@ export async function completeSaleAction(
   _prev: SaleActionState | null,
   formData: FormData,
 ): Promise<SaleActionState> {
-  const gate = await requireMemberClient();
+  const gate = await requireMemberClient(true);
   if (!gate.ok) {
     return gate.state;
   }
@@ -476,7 +472,7 @@ export async function cancelOpenSaleAction(
   _prev: SaleActionState | null,
   formData: FormData,
 ): Promise<SaleActionState> {
-  const gate = await requireMemberClient();
+  const gate = await requireMemberClient(true);
   if (!gate.ok) {
     return gate.state;
   }
@@ -521,7 +517,7 @@ export async function correctCompletedSaleAction(
   _prev: SaleActionState | null,
   formData: FormData,
 ): Promise<SaleActionState> {
-  const gate = await requireMemberClient();
+  const gate = await requireMemberClient(true);
   if (!gate.ok) {
     return gate.state;
   }

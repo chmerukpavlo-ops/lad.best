@@ -1,7 +1,6 @@
 import Link from "next/link";
 
 import { CardSurface } from "@/components/ui/card-surface";
-import { requireVerifiedUser } from "@/lib/auth/require-user";
 import { WORKSPACE_NAV, navLabel } from "@/lib/app/nav";
 import { cn } from "cn";
 
@@ -10,7 +9,6 @@ export const fetchCache = "force-no-store";
 export const revalidate = 0;
 
 export default async function MorePage() {
-  await requireVerifiedUser({ withUserRecord: true });
   const items = WORKSPACE_NAV.filter((item) => item.mobileMore);
 
   return (

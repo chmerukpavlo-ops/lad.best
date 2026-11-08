@@ -2,7 +2,6 @@ import { getSharedAvailabilityPreview } from "@/app/actions/calendar";
 import { getWorkspacePeriodReport } from "@/app/actions/summary";
 import { DesktopDashboard } from "@/components/dashboard/desktop-dashboard";
 import { MobileDashboard } from "@/components/dashboard/mobile-dashboard";
-import { requireVerifiedUser } from "@/lib/auth/require-user";
 import { parseSummaryPeriod } from "@/lib/summary/period";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +15,6 @@ export default async function AppHomePage({
 }: {
   searchParams: SearchParams;
 }) {
-  await requireVerifiedUser({ withUserRecord: true });
   const params = await searchParams;
   const periodKey = parseSummaryPeriod(params.period);
   const [report, availabilityRes] = await Promise.all([

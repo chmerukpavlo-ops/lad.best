@@ -20,7 +20,7 @@ export default async function NewSalePage({
 }: {
   searchParams: SearchParams;
 }) {
-  const user = await requireVerifiedUser({ withUserRecord: true });
+  const user = await requireVerifiedUser();
   const params = await searchParams;
   const [listingsResult, membersResult] = await Promise.all([
     listSalesListings(),

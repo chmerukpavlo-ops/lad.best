@@ -16,6 +16,7 @@ export default async function PrivateAppLayout({
 }: {
   children: React.ReactNode;
 }) {
-  await requireVerifiedUser({ withUserRecord: true });
+  // Claims-only: middleware refreshed session; mutations still use getUser.
+  await requireVerifiedUser();
   return <WorkspaceShell>{children}</WorkspaceShell>;
 }

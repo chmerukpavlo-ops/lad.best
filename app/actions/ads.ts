@@ -16,15 +16,13 @@ import {
   validateAdPaymentCorrect,
   validateAdPaymentCreate,
 } from "@/lib/ads/validation";
-import { requireVerifiedUser } from "@/lib/auth/require-user";
+import { getMemberGate } from "@/lib/auth/member-gate";
 import { parsePositiveInt } from "@/lib/listings/validation";
 import { resolveOptimisticUpdate } from "@/lib/listings/version";
-import { getMembershipWorkspace } from "@/lib/listings/workspace";
 import {
   dbAmountToKopiyky,
   sumKopiyky,
 } from "@/lib/money/kopiyky";
-import { createClient } from "@/lib/supabase/server";
 
 const AD_SELECT =
   "id, workspace_id, listing_id, amount, paid_on, payer_id, note, status, correction_reason, version, client_request_id, created_by, updated_by, created_at, updated_at";
@@ -38,24 +36,22 @@ function fail(code: AdActionState["code"], message: string): AdActionState {
   return { ok: false, code, message };
 }
 
-async function requireMemberClient() {
-  const user = await requireVerifiedUser({ withUserRecord: true });
-  const supabase = await createClient();
-  const membership = await getMembershipWorkspace(supabase, user.id);
-  if (!membership.ok) {
+async function requireMemberClient(strict = false) {
+  const gate = await getMemberGate(strict);
+  if (!gate.ok) {
     return {
       ok: false as const,
       state: fail(
-        membership.reason === "none" ? "unauthorized" : "error",
-        membership.message,
+        gate.reason === "unauthorized" ? "unauthorized" : "error",
+        gate.message,
       ),
     };
   }
   return {
     ok: true as const,
-    user,
-    supabase,
-    workspaceId: membership.workspaceId,
+    user: gate.user,
+    supabase: gate.supabase,
+    workspaceId: gate.workspaceId,
   };
 }
 
@@ -310,7 +306,7 @@ export async function createAdPayment(
   _prev: AdActionState | null,
   formData: FormData,
 ): Promise<AdActionState> {
-  const gate = await requireMemberClient();
+  const gate = await requireMemberClient(true);
   if (!gate.ok) {
     return gate.state;
   }
@@ -402,7 +398,7 @@ export async function correctAdPayment(
   _prev: AdActionState | null,
   formData: FormData,
 ): Promise<AdActionState> {
-  const gate = await requireMemberClient();
+  const gate = await requireMemberClient(true);
   if (!gate.ok) {
     return gate.state;
   }

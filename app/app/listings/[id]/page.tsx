@@ -11,7 +11,6 @@ import { ListingForm } from "@/components/listings/listing-form";
 import { ListingStatusForm } from "@/components/listings/listing-status-form";
 import { Button } from "@/components/ui/button";
 import { CardSurface } from "@/components/ui/card-surface";
-import { requireVerifiedUser } from "@/lib/auth/require-user";
 import { formatUahDisplay } from "@/lib/money/kopiyky";
 
 export const dynamic = "force-dynamic";
@@ -23,7 +22,6 @@ type PageProps = {
 };
 
 export default async function ListingDetailPage({ params }: PageProps) {
-  await requireVerifiedUser({ withUserRecord: true });
   const { id } = await params;
   const result = await getListing(id);
 

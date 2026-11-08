@@ -4,7 +4,6 @@ import { listSales } from "@/app/actions/sales";
 import { getWorkspacePeriodReport } from "@/app/actions/summary";
 import { CardSurface } from "@/components/ui/card-surface";
 import { Button } from "@/components/ui/button";
-import { requireVerifiedUser } from "@/lib/auth/require-user";
 import {
   dbAmountToKopiyky,
   dbSignedAmountToKopiyky,
@@ -41,7 +40,6 @@ export default async function SalesPage({
 }: {
   searchParams: SearchParams;
 }) {
-  await requireVerifiedUser({ withUserRecord: true });
   const params = await searchParams;
   const statusFilter =
     params.status === "completed" ||

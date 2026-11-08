@@ -3,7 +3,6 @@ import Link from "next/link";
 import { listAdPayments } from "@/app/actions/ads";
 import { CardSurface } from "@/components/ui/card-surface";
 import { Button } from "@/components/ui/button";
-import { requireVerifiedUser } from "@/lib/auth/require-user";
 import {
   dbAmountToKopiyky,
   formatUahDisplay,
@@ -29,7 +28,6 @@ function formatPaidOnUa(isoDate: string): string {
 }
 
 export default async function AdsPage() {
-  await requireVerifiedUser({ withUserRecord: true });
   const result = await listAdPayments();
 
   return (

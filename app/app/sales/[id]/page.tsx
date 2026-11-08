@@ -16,7 +16,6 @@ import {
   SaleEditForm,
 } from "@/components/sales/sale-form";
 import { CardSurface } from "@/components/ui/card-surface";
-import { requireVerifiedUser } from "@/lib/auth/require-user";
 import {
   dbAmountToKopiyky,
   dbSignedAmountToKopiyky,
@@ -47,7 +46,6 @@ function statusUa(status: string) {
 }
 
 export default async function SaleDetailPage({ params }: PageProps) {
-  await requireVerifiedUser({ withUserRecord: true });
   const { id } = await params;
   const [saleResult, membersResult] = await Promise.all([
     getSale(id),

@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { requireVerifiedUser } from "@/lib/auth/require-user";
+import { getMemberGate } from "@/lib/auth/member-gate";
 import type { Listing, ListingActionState } from "@/lib/listings/types";
 import {
   emptyToNull,
@@ -12,8 +12,6 @@ import {
   validateListingInput,
 } from "@/lib/listings/validation";
 import { resolveOptimisticUpdate } from "@/lib/listings/version";
-import { getMembershipWorkspace } from "@/lib/listings/workspace";
-import { createClient } from "@/lib/supabase/server";
 
 const LISTING_SELECT =
   "id, workspace_id, title, colors_text, description, notes, publication_url, status, version, created_by, updated_by, created_at, updated_at";
@@ -30,24 +28,22 @@ function fail(
   return { ok: false, code, message };
 }
 
-async function requireMemberClient() {
-  const user = await requireVerifiedUser({ withUserRecord: true });
-  const supabase = await createClient();
-  const membership = await getMembershipWorkspace(supabase, user.id);
-  if (!membership.ok) {
+async function requireMemberClient(strict = false) {
+  const gate = await getMemberGate(strict);
+  if (!gate.ok) {
     return {
       ok: false as const,
       state: fail(
-        membership.reason === "none" ? "unauthorized" : "error",
-        membership.message,
+        gate.reason === "unauthorized" ? "unauthorized" : "error",
+        gate.message,
       ),
     };
   }
   return {
     ok: true as const,
-    user,
-    supabase,
-    workspaceId: membership.workspaceId,
+    user: gate.user,
+    supabase: gate.supabase,
+    workspaceId: gate.workspaceId,
   };
 }
 
@@ -55,7 +51,7 @@ export async function createListing(
   _prev: ListingActionState | null,
   formData: FormData,
 ): Promise<ListingActionState> {
-  const gate = await requireMemberClient();
+  const gate = await requireMemberClient(true);
   if (!gate.ok) {
     return gate.state;
   }
@@ -103,7 +99,7 @@ export async function updateListing(
   _prev: ListingActionState | null,
   formData: FormData,
 ): Promise<ListingActionState> {
-  const gate = await requireMemberClient();
+  const gate = await requireMemberClient(true);
   if (!gate.ok) {
     return gate.state;
   }
@@ -185,7 +181,7 @@ export async function setListingStatus(
   _prev: ListingActionState | null,
   formData: FormData,
 ): Promise<ListingActionState> {
-  const gate = await requireMemberClient();
+  const gate = await requireMemberClient(true);
   if (!gate.ok) {
     return gate.state;
   }
@@ -250,7 +246,9 @@ export async function setListingStatus(
   };
 }
 
-export async function listListings(status: "active" | "archived"): Promise<{
+export async function listListings(
+  status: "active" | "archived" | "all" = "active",
+): Promise<{
   ok: boolean;
   listings: Listing[];
   message?: string;
@@ -260,19 +258,23 @@ export async function listListings(status: "active" | "archived"): Promise<{
     return { ok: false, listings: [], message: gate.state.message };
   }
 
-  const { data, error } = await gate.supabase
+  let query = gate.supabase
     .from("listings")
     .select(LISTING_SELECT)
     .eq("workspace_id", gate.workspaceId)
-    .eq("status", status)
     .order("updated_at", { ascending: false });
+
+  if (status !== "all") {
+    query = query.eq("status", status);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     return {
       ok: false,
       listings: [],
-      message:
-        "Не вдалося завантажити оголошення. Спробуйте пізніше.",
+      message: "Не вдалося завантажити оголошення. Спробуйте пізніше.",
     };
   }
 

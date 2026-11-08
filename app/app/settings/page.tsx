@@ -7,7 +7,7 @@ export const fetchCache = "force-no-store";
 export const revalidate = 0;
 
 export default async function SettingsPage() {
-  const user = await requireVerifiedUser({ withUserRecord: true });
+  const user = await requireVerifiedUser();
 
   return (
     <section className="mx-auto flex w-full max-w-3xl flex-col gap-5">

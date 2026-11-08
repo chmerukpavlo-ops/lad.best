@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { redirect } from "next/navigation";
 
 import { AUTH_PATHS } from "@/lib/auth/paths";
@@ -9,13 +10,10 @@ export type VerifiedUser = {
 };
 
 /**
- * Server auth gate. Prefer withUserRecord: true (getUser) for private pages
- * and sensitive actions. Middleware alone is not enough.
- * This is not instant JWT revocation for PostgREST/Data API.
+ * Claims-only gate (deduped per request). Middleware already refreshed the session.
+ * Prefer for RSC reads / navigation. Not a substitute for RLS.
  */
-export async function requireVerifiedUser(options?: {
-  withUserRecord?: boolean;
-}): Promise<VerifiedUser> {
+const requireClaimsUser = cache(async (): Promise<VerifiedUser> => {
   const supabase = await createClient();
   const { data: claimsData, error: claimsError } =
     await supabase.auth.getClaims();
@@ -25,16 +23,22 @@ export async function requireVerifiedUser(options?: {
     redirect(AUTH_PATHS.login);
   }
 
-  if (!options?.withUserRecord) {
-    const emailClaim = claimsData.claims.email;
-    return {
-      id: userId,
-      email: typeof emailClaim === "string" ? emailClaim : undefined,
-    };
-  }
+  const emailClaim = claimsData.claims.email;
+  return {
+    id: userId,
+    email: typeof emailClaim === "string" ? emailClaim : undefined,
+  };
+});
 
+/**
+ * Auth-server confirmation via getUser (deduped per request).
+ * Prefer for mutations and sensitive writes.
+ */
+const requireRecordUser = cache(async (): Promise<VerifiedUser> => {
+  const claimed = await requireClaimsUser();
+  const supabase = await createClient();
   const { data: userData, error: userError } = await supabase.auth.getUser();
-  if (userError || !userData.user || userData.user.id !== userId) {
+  if (userError || !userData.user || userData.user.id !== claimed.id) {
     redirect(AUTH_PATHS.login);
   }
 
@@ -42,4 +46,17 @@ export async function requireVerifiedUser(options?: {
     id: userData.user.id,
     email: userData.user.email,
   };
+});
+
+/**
+ * Server auth gate. Default = claims (fast). withUserRecord = getUser (mutations).
+ * Middleware alone is not enough. This is not instant JWT revocation for PostgREST.
+ */
+export async function requireVerifiedUser(options?: {
+  withUserRecord?: boolean;
+}): Promise<VerifiedUser> {
+  if (options?.withUserRecord) {
+    return requireRecordUser();
+  }
+  return requireClaimsUser();
 }
