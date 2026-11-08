@@ -205,6 +205,13 @@ type CreateProps = {
   members: WorkspaceMemberOption[];
   defaultListingId?: string;
   defaultExecutorId: string;
+  splitDefaults?: {
+    enabled: boolean;
+    percentA: number;
+    percentB: number;
+    labelA: string;
+    labelB: string;
+  } | null;
 };
 
 export function SaleCreateForm({
@@ -213,6 +220,7 @@ export function SaleCreateForm({
   members,
   defaultListingId,
   defaultExecutorId,
+  splitDefaults,
 }: CreateProps) {
   const online = useOnlineStatus();
   const [state, formAction, pending] = useActionState(action, initialState);
@@ -260,6 +268,55 @@ export function SaleCreateForm({
         pending={pending}
         online={online}
       />
+
+      {splitDefaults ? (
+        <div className="flex flex-col gap-3 rounded-xl border border-border p-3">
+          <label className="flex items-start gap-3 text-sm">
+            <input
+              type="checkbox"
+              name="split_enabled"
+              defaultChecked={splitDefaults.enabled}
+              className="mt-1 size-4 accent-primary"
+              disabled={pending || !online}
+            />
+            <span>
+              <span className="font-medium">Ділити прибуток</span>
+              <span className="mt-0.5 block text-xs text-muted-foreground">
+                Знімок для цього продажу (без виплат). За замовчуванням з
+                налаштувань.
+              </span>
+            </span>
+          </label>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="percent_a">{splitDefaults.labelA}, %</Label>
+              <Input
+                id="percent_a"
+                name="percent_a"
+                type="number"
+                min={0}
+                max={100}
+                defaultValue={splitDefaults.percentA}
+                className="min-h-11"
+                disabled={pending || !online}
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="percent_b">{splitDefaults.labelB}, %</Label>
+              <Input
+                id="percent_b"
+                name="percent_b"
+                type="number"
+                min={0}
+                max={100}
+                defaultValue={splitDefaults.percentB}
+                className="min-h-11"
+                disabled={pending || !online}
+              />
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {!online ? (
         <p className="text-sm text-destructive" role="alert">

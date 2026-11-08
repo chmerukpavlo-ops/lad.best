@@ -23,6 +23,7 @@ import {
   dbAmountToKopiyky,
   sumKopiyky,
 } from "@/lib/money/kopiyky";
+import { awardRatingPoints } from "@/lib/rating/award";
 
 const AD_SELECT =
   "id, workspace_id, listing_id, amount, paid_on, payer_id, note, status, correction_reason, version, client_request_id, created_by, updated_by, created_at, updated_at";
@@ -390,7 +391,17 @@ export async function createAdPayment(
     return fail("error", "Не вдалося зберегти платіж.");
   }
 
+  await awardRatingPoints({
+    supabase: gate.supabase,
+    workspaceId: gate.workspaceId,
+    actorId: value.payer_id || gate.user.id,
+    actionKey: "ad_payment",
+    entityType: "ad_payments",
+    entityId: data.id,
+  });
+
   revalidateAdPaths(value.listing_id, data.id);
+  revalidatePath("/app/rating");
   redirect(`/app/ads/${data.id}`);
 }
 

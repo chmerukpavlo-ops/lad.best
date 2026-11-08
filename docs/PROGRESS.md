@@ -2,7 +2,8 @@
 
 ## Поточний стан
 **Gate 2–6 на `lad` застосовані.** Gate 7 + publish на `lad.best` (користувач підтвердив вхід/вихід/PWA).  
-**Perf-pass (код, 2026-11-08):** claims-first auth + React `cache` для member gate; без подвійного `getUser` на навігації; `listListings('all')` одним запитом; nav pending bar + `loading.tsx`. `tsc`/`eslint` ✅. Production redeploy — за дозволом.
+**Perf-pass (код):** claims-first auth + `cache`; nav pending + loading.  
+**Налаштування (код+БД, 2026-11-09):** профіль, учасники, робочі межі, спільні фінанси (toggle+% → знімок на продаж), рейтинг (ваги + events). Міграція `workspace_finance_rating_settings` на `lad` ✅ (remote version `20261108235219`; локальний файл `20261108234217_…`). Таблиці: `workspace_finance_settings`, `sale_profit_splits`, `workspace_rating_settings`, `rating_events`. Без виплат/боргів. `tsc`/`eslint` ✅.
 
 ## Gate 7 — перевірено локально (2026-11-08)
 | Перевірка | Результат |

@@ -21,6 +21,9 @@ import {
 import { getMemberGate } from "@/lib/auth/member-gate";
 import { parsePositiveInt } from "@/lib/listings/validation";
 import { resolveOptimisticUpdate } from "@/lib/listings/version";
+import { awardRatingPoints } from "@/lib/rating/award";
+import { parseWeight } from "@/lib/settings/finance-rating";
+import { getOrCreateFinanceSettings } from "@/app/actions/settings";
 
 const SALE_SELECT =
   "id, workspace_id, listing_id, sale_price, cost_price, direct_expenses, color_text, size_text, note, executor_id, sold_on, status, margin, completed_on, completed_at, completed_by, correction_reason, version, client_request_id, complete_request_id, created_by, updated_by, created_at, updated_at";
@@ -284,6 +287,35 @@ export async function createSale(
     return fail("error", "Не вдалося зберегти продаж.");
   }
 
+  // Snapshot default profit split (no payouts) when enabled.
+  try {
+    const finance = await getOrCreateFinanceSettings();
+    if (finance.ok && finance.settings) {
+      const formPctA = parseWeight(formString(formData, "percent_a"));
+      const formPctB = parseWeight(formString(formData, "percent_b"));
+      const percentA = formPctA ?? finance.settings.percent_a;
+      const percentB = formPctB ?? finance.settings.percent_b;
+      const enabled =
+        formData.get("split_enabled") === "on" ||
+        (formData.get("split_enabled") == null &&
+          finance.settings.split_enabled);
+
+      if (percentA + percentB === 100) {
+        await gate.supabase.from("sale_profit_splits").insert({
+          sale_id: data.id,
+          workspace_id: gate.workspaceId,
+          enabled,
+          member_a_id: finance.settings.member_a_id,
+          member_b_id: finance.settings.member_b_id,
+          percent_a: percentA,
+          percent_b: percentB,
+        });
+      }
+    }
+  } catch {
+    /* migration may be pending */
+  }
+
   revalidateSalePaths(value.listing_id, data.id);
   redirect(`/app/sales/${data.id}`);
 }
@@ -458,7 +490,17 @@ export async function completeSaleAction(
     return fail("error", "Не вдалося завершити продаж.");
   }
 
+  await awardRatingPoints({
+    supabase: gate.supabase,
+    workspaceId: gate.workspaceId,
+    actorId: sale.executor_id || gate.user.id,
+    actionKey: "sale_completed",
+    entityType: "sales",
+    entityId: sale.id,
+  });
+
   revalidateSalePaths(sale.listing_id, sale.id);
+  revalidatePath("/app/rating");
   return {
     ok: true,
     code: "ok",

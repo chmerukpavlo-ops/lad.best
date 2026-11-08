@@ -111,7 +111,7 @@ export const WORKSPACE_NAV: WorkspaceNavItem[] = [
     desktop: true,
     mobileBottom: false,
     mobileMore: true,
-    status: "soon",
+    status: "live",
   },
   {
     href: "/app/history",

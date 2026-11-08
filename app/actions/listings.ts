@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 
 import { getMemberGate } from "@/lib/auth/member-gate";
 import type { Listing, ListingActionState } from "@/lib/listings/types";
+import { awardRatingPoints } from "@/lib/rating/award";
 import {
   emptyToNull,
   parseListingStatus,
@@ -90,8 +91,28 @@ export async function createListing(
     );
   }
 
+  await awardRatingPoints({
+    supabase: gate.supabase,
+    workspaceId: gate.workspaceId,
+    actorId: gate.user.id,
+    actionKey: "listing_create",
+    entityType: "listings",
+    entityId: data.id,
+  });
+  if (value.description.trim()) {
+    await awardRatingPoints({
+      supabase: gate.supabase,
+      workspaceId: gate.workspaceId,
+      actorId: gate.user.id,
+      actionKey: "listing_description",
+      entityType: "listings",
+      entityId: data.id,
+    });
+  }
+
   revalidatePath("/app");
   revalidatePath("/app/listings");
+  revalidatePath("/app/rating");
   redirect(`/app/listings/${data.id}`);
 }
 
@@ -167,8 +188,18 @@ export async function updateListing(
     );
   }
 
+  await awardRatingPoints({
+    supabase: gate.supabase,
+    workspaceId: gate.workspaceId,
+    actorId: gate.user.id,
+    actionKey: "listing_update",
+    entityType: "listings",
+    entityId: listingId,
+  });
+
   revalidatePath("/app/listings");
   revalidatePath(`/app/listings/${listingId}`);
+  revalidatePath("/app/rating");
   return {
     ok: true,
     code: "ok",
