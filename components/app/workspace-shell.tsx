@@ -69,6 +69,7 @@ export function WorkspaceShell({ children }: WorkspaceShellProps) {
         <nav className="mt-8 flex flex-1 flex-col gap-0.5" aria-label="Розділи">
           {desktopItems.map((item) => {
             const active = item.match(pathname);
+            const Icon = item.icon;
             return (
               <NavLink
                 key={item.href}
@@ -79,10 +80,10 @@ export function WorkspaceShell({ children }: WorkspaceShellProps) {
                 activeClassName="bg-[#1c1e24] text-foreground"
                 inactiveClassName="text-muted-foreground hover:bg-[#1c1e24]/60 hover:text-foreground"
               >
-                <span
+                <Icon
                   className={cn(
-                    "size-1.5 shrink-0 rounded-[2px]",
-                    active ? "bg-primary" : "bg-[#3a3d46]",
+                    "size-4 shrink-0",
+                    active ? "text-primary" : "text-muted-foreground",
                   )}
                   aria-hidden
                 />
