@@ -41,4 +41,7 @@ supabase/.temp/
 supabase/.branches/
 *.dump
 
+# Local scratch (PDF renders etc.)
+.tmp-pdf/
+
 # If a secret was already committed, ignoring it is not enough: rotate it.

@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 
-import { AUTH_PATHS, safeAuthNextPath } from "@/lib/auth/paths";
+import {
+  AUTH_PATHS,
+  sameOriginRedirectUrl,
+} from "@/lib/auth/paths";
 import { createClient } from "@/lib/supabase/server";
 
 /**
@@ -10,19 +13,15 @@ import { createClient } from "@/lib/supabase/server";
  *   http://127.0.0.1:3000/auth/callback
  */
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url);
+  const requestUrl = new URL(request.url);
+  const { searchParams, origin } = requestUrl;
   const code = searchParams.get("code");
-  const next = safeAuthNextPath(
-    searchParams.get("next"),
-    AUTH_PATHS.updatePassword,
-  );
-  const errorDescription =
+  const errorParam =
     searchParams.get("error_description") ?? searchParams.get("error");
 
-  if (errorDescription) {
+  if (errorParam) {
     const url = new URL(AUTH_PATHS.error, origin);
     url.searchParams.set("reason", "link");
-    url.searchParams.set("detail", errorDescription);
     return NextResponse.redirect(url);
   }
 
@@ -41,13 +40,18 @@ export async function GET(request: Request) {
     return NextResponse.redirect(url);
   }
 
-  const { data: claimsData, error: claimsError } =
-    await supabase.auth.getClaims();
-  if (claimsError || !claimsData?.claims?.sub) {
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  if (userError || !userData.user) {
     const url = new URL(AUTH_PATHS.error, origin);
     url.searchParams.set("reason", "session");
     return NextResponse.redirect(url);
   }
 
-  return NextResponse.redirect(new URL(next, origin));
+  return NextResponse.redirect(
+    sameOriginRedirectUrl(
+      requestUrl,
+      searchParams.get("next"),
+      AUTH_PATHS.updatePassword,
+    ),
+  );
 }

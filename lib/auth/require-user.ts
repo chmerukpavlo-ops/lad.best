@@ -9,9 +9,9 @@ export type VerifiedUser = {
 };
 
 /**
- * Verifies the JWT with getClaims(). Optionally loads a fresh user via getUser()
- * when an Auth-server-confirmed record is needed (e.g. email).
- * Middleware alone is not enough for server operations.
+ * Server auth gate. Prefer withUserRecord: true (getUser) for private pages
+ * and sensitive actions. Middleware alone is not enough.
+ * This is not instant JWT revocation for PostgREST/Data API.
  */
 export async function requireVerifiedUser(options?: {
   withUserRecord?: boolean;

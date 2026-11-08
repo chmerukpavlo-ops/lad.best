@@ -15,7 +15,7 @@ export default async function LoginPage({
   return (
     <section className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center gap-6">
       <div className="space-y-2">
-        <h1 className="font-heading text-3xl font-semibold tracking-tight">
+        <h1 className="text-3xl font-semibold tracking-tight">
           Вхід
         </h1>
         <p className="text-sm text-muted-foreground">
@@ -25,7 +25,7 @@ export default async function LoginPage({
 
       {params.error === "env" ? (
         <p className="text-sm text-destructive" role="alert">
-          Локальні змінні Supabase ще не налаштовані.
+          Вхід тимчасово недоступний. Спробуйте пізніше.
         </p>
       ) : null}
 

@@ -2,38 +2,45 @@ import Link from "next/link";
 
 import { AUTH_PATHS } from "@/lib/auth/paths";
 
+const MESSAGES: Record<string, { title: string; hint: string }> = {
+  expired: {
+    title: "Посилання недійсне або прострочене",
+    hint: "Запросіть нове відновлення пароля та відкрийте свіжий лист.",
+  },
+  link: {
+    title: "Посилання недійсне або прострочене",
+    hint: "Запросіть нове відновлення пароля та відкрийте свіжий лист.",
+  },
+  missing_code: {
+    title: "Відсутній код підтвердження",
+    hint: "Спробуйте увійти знову або запросити нове посилання.",
+  },
+  session: {
+    title: "Не вдалося підтвердити сесію",
+    hint: "Спробуйте увійти знову або запросити нове посилання.",
+  },
+  unknown: {
+    title: "Помилка автентифікації",
+    hint: "Спробуйте увійти знову або запросити нове посилання.",
+  },
+};
+
 export default async function AuthErrorPage({
   searchParams,
 }: {
-  searchParams: Promise<{ reason?: string; detail?: string }>;
+  searchParams: Promise<{ reason?: string }>;
 }) {
   const params = await searchParams;
-  const reason = params.reason ?? "unknown";
-
-  const title =
-    reason === "expired" || reason === "link"
-      ? "Посилання недійсне або прострочене"
-      : reason === "missing_code"
-        ? "Відсутній код підтвердження"
-        : "Помилка автентифікації";
-
-  const hint =
-    reason === "expired" || reason === "link"
-      ? "Запросіть нове відновлення пароля та відкрийте свіжий лист."
-      : "Спробуйте увійти знову або запросити нове посилання.";
+  const reason = params.reason && MESSAGES[params.reason] ? params.reason : "unknown";
+  const { title, hint } = MESSAGES[reason];
 
   return (
     <section className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center gap-6">
       <div className="space-y-2">
-        <h1 className="font-heading text-3xl font-semibold tracking-tight">
+        <h1 className="text-3xl font-semibold tracking-tight">
           {title}
         </h1>
         <p className="text-sm text-muted-foreground">{hint}</p>
-        {params.detail ? (
-          <p className="text-xs text-muted-foreground/80 break-words">
-            {params.detail}
-          </p>
-        ) : null}
       </div>
 
       <div className="flex flex-col gap-3 text-sm">

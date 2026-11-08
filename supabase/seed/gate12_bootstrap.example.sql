@@ -12,9 +12,6 @@ begin;
 insert into public.workspaces (name)
 values ('Лад');
 
--- Capture the singleton workspace id
--- (only one row allowed by migration constraints)
-
 with ws as (
   select id from public.workspaces limit 1
 )
@@ -23,14 +20,12 @@ select ws.id, v.profile_id
 from ws
 cross join (
   values
-    ('00000000-0000-0000-0000-000000000001'::uuid),
-    ('00000000-0000-0000-0000-000000000002'::uuid)
+    ('6e40da94-eba7-4e99-8d77-908dffa54f79'::uuid),
+    ('86b79b5b-e5ac-4343-ae7b-f2306b77925f'::uuid)
 ) as v(profile_id);
 
-select private.write_audit_event(
+select private.write_system_audit_event(
   (select id from public.workspaces limit 1),
-  'system',
-  null,
   'workspace.bootstrapped',
   'workspaces',
   (select id from public.workspaces limit 1),

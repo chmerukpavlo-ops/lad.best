@@ -8,7 +8,7 @@ export default function ForgotPasswordPage() {
   return (
     <section className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center gap-6">
       <div className="space-y-2">
-        <h1 className="font-heading text-3xl font-semibold tracking-tight">
+        <h1 className="text-3xl font-semibold tracking-tight">
           Відновлення пароля
         </h1>
         <p className="text-sm text-muted-foreground">

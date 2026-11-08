@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { AUTH_PATHS } from "@/lib/auth/paths";
@@ -7,29 +10,29 @@ type AppShellProps = {
   children: React.ReactNode;
 };
 
+/** Public chrome; skipped under `/app` (workspace shell owns that). */
 export function AppShell({ children }: AppShellProps) {
+  const pathname = usePathname();
+  if (pathname.startsWith(AUTH_PATHS.app)) {
+    return <>{children}</>;
+  }
+
   return (
     <div className="flex min-h-dvh flex-col">
-      <header className="sticky top-0 z-10 border-b border-border/80 bg-background/85 backdrop-blur-md">
+      <header className="sticky top-0 z-10 border-b border-border/80 bg-background/90 backdrop-blur-md">
         <div className="mx-auto flex h-14 w-full max-w-3xl items-center justify-between px-4 sm:px-6">
           <Link
             href={AUTH_PATHS.home}
-            className="font-heading text-lg font-semibold tracking-tight text-foreground"
+            className="text-lg font-semibold tracking-tight text-primary"
           >
             Лад
           </Link>
-          <nav className="flex items-center gap-3 text-sm">
+          <nav className="flex items-center gap-4 text-sm">
             <Link
               href={AUTH_PATHS.login}
               className="text-muted-foreground transition-colors hover:text-foreground"
             >
               Вхід
-            </Link>
-            <Link
-              href={AUTH_PATHS.app}
-              className="text-muted-foreground transition-colors hover:text-foreground"
-            >
-              Простір
             </Link>
           </nav>
         </div>
@@ -40,9 +43,8 @@ export function AppShell({ children }: AppShellProps) {
       </main>
 
       <footer className="border-t border-border/80">
-        <div className="mx-auto flex w-full max-w-3xl flex-col gap-1 px-4 py-4 text-sm text-muted-foreground sm:px-6">
+        <div className="mx-auto w-full max-w-3xl px-4 py-4 text-sm text-muted-foreground sm:px-6">
           <p>Приватний застосунок для двох учасників.</p>
-          <p>Redirect recovery: /auth/callback → /auth/update-password</p>
         </div>
       </footer>
     </div>
@@ -55,7 +57,7 @@ export function ShellStatusActions() {
       <Button
         asChild
         size="lg"
-        className="min-h-11 min-w-[11rem] px-5 text-base"
+        className="min-h-11 min-w-[11rem] rounded-xl px-5 text-base"
       >
         <Link href={AUTH_PATHS.login}>Увійти</Link>
       </Button>
@@ -63,7 +65,7 @@ export function ShellStatusActions() {
         asChild
         variant="outline"
         size="lg"
-        className="min-h-11 min-w-[11rem] px-5 text-base"
+        className="min-h-11 min-w-[11rem] rounded-xl px-5 text-base"
       >
         <Link href={AUTH_PATHS.forgotPassword}>Відновити пароль</Link>
       </Button>

@@ -44,7 +44,9 @@ create table public.audit_events (
   id uuid primary key default gen_random_uuid(),
   workspace_id uuid references public.workspaces (id) on delete restrict,
   actor_kind text not null check (actor_kind in ('user', 'system')),
-  actor_id uuid references public.profiles (id) on delete set null,
+  -- Historical actor UUID (auth.users / profiles id). No FK: deleting an
+  -- account must not null out past user events (would break actor_origin_chk).
+  actor_id uuid,
   action text not null check (char_length(trim(action)) > 0),
   entity_type text not null check (char_length(trim(entity_type)) > 0),
   entity_id uuid,
@@ -156,10 +158,56 @@ begin
 end;
 $$;
 
-create or replace function private.write_audit_event(
+-- User audit: actor always from auth.uid(); callers cannot forge actor_id.
+create or replace function private.write_user_audit_event(
   p_workspace_id uuid,
-  p_actor_kind text,
-  p_actor_id uuid,
+  p_action text,
+  p_entity_type text,
+  p_entity_id uuid,
+  p_before jsonb default null,
+  p_after jsonb default null
+)
+returns uuid
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  new_id uuid;
+  actor uuid := auth.uid();
+begin
+  if actor is null then
+    raise exception 'user audit requires authenticated auth.uid()';
+  end if;
+
+  insert into public.audit_events (
+    workspace_id,
+    actor_kind,
+    actor_id,
+    action,
+    entity_type,
+    entity_id,
+    before,
+    after
+  ) values (
+    p_workspace_id,
+    'user',
+    actor,
+    p_action,
+    p_entity_type,
+    p_entity_id,
+    p_before,
+    p_after
+  )
+  returning id into new_id;
+
+  return new_id;
+end;
+$$;
+
+-- System/bootstrap audit: trusted definer path only (no authenticated EXECUTE).
+create or replace function private.write_system_audit_event(
+  p_workspace_id uuid,
   p_action text,
   p_entity_type text,
   p_entity_id uuid,
@@ -174,16 +222,6 @@ as $$
 declare
   new_id uuid;
 begin
-  if p_actor_kind = 'system' then
-    p_actor_id := null;
-  elsif p_actor_kind = 'user' then
-    if p_actor_id is null then
-      raise exception 'user audit events require actor_id';
-    end if;
-  else
-    raise exception 'invalid actor_kind';
-  end if;
-
   insert into public.audit_events (
     workspace_id,
     actor_kind,
@@ -195,8 +233,8 @@ begin
     after
   ) values (
     p_workspace_id,
-    p_actor_kind,
-    p_actor_id,
+    'system',
+    null,
     p_action,
     p_entity_type,
     p_entity_id,
@@ -229,9 +267,7 @@ begin
   values (new.id, chosen_name)
   on conflict (id) do nothing;
 
-  perform private.write_audit_event(
-    null,
-    'system',
+  perform private.write_system_audit_event(
     null,
     'profile.created',
     'profiles',
@@ -357,8 +393,9 @@ grant select on table public.audit_events to authenticated;
 -- Helper used inside policies must be executable by the role evaluating RLS.
 grant execute on function private.is_workspace_member(uuid) to authenticated;
 
--- Authenticated must not call audit writer or bootstrap helpers directly.
-revoke execute on function private.write_audit_event(uuid, text, uuid, text, text, uuid, jsonb, jsonb) from public, anon, authenticated;
+-- Authenticated must not call audit writers or bootstrap helpers directly.
+revoke execute on function private.write_user_audit_event(uuid, text, text, uuid, jsonb, jsonb) from public, anon, authenticated;
+revoke execute on function private.write_system_audit_event(uuid, text, text, uuid, jsonb, jsonb) from public, anon, authenticated;
 revoke execute on function private.enforce_membership_limit() from public, anon, authenticated;
 revoke execute on function private.enforce_single_workspace() from public, anon, authenticated;
 revoke execute on function private.handle_auth_user_created() from public, anon, authenticated;

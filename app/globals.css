@@ -8,8 +8,8 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
-  --font-mono: var(--font-mono);
-  --font-heading: var(--font-heading);
+  --font-mono: var(--font-sans);
+  --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -48,40 +48,40 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* SPEC §11: dark mobile-first — graphite + lime. App is dark by default. */
+/* PDF mockup palette (graphite + lime). Typography: Inter (UA/cyrillic). */
 :root,
 .dark {
-  --background: #151619;
+  --background: #0b0c0e;
   --foreground: #f4f4f5;
-  --card: #0b0c0d;
+  --card: #15161a;
   --card-foreground: #f4f4f5;
-  --popover: #0b0c0d;
+  --popover: #15161a;
   --popover-foreground: #f4f4f5;
   --primary: #d4ff3a;
-  --primary-foreground: #151619;
-  --secondary: #1c1e22;
+  --primary-foreground: #0b0c0e;
+  --secondary: #1c1e24;
   --secondary-foreground: #f4f4f5;
-  --muted: #1c1e22;
+  --muted: #1c1e24;
   --muted-foreground: #9a9ca3;
   --accent: #d4ff3a;
-  --accent-foreground: #151619;
+  --accent-foreground: #0b0c0e;
   --destructive: #f87171;
-  --border: #24262b;
-  --input: #24262b;
+  --border: #2a2d34;
+  --input: #2a2d34;
   --ring: #d4ff3a;
   --chart-1: #d4ff3a;
   --chart-2: #9a9ca3;
   --chart-3: #f4f4f5;
-  --chart-4: #24262b;
-  --chart-5: #0b0c0d;
-  --radius: 0.75rem;
-  --sidebar: #0b0c0d;
+  --chart-4: #2a2d34;
+  --chart-5: #15161a;
+  --radius: 1rem;
+  --sidebar: #15161a;
   --sidebar-foreground: #f4f4f5;
   --sidebar-primary: #d4ff3a;
-  --sidebar-primary-foreground: #151619;
-  --sidebar-accent: #1c1e22;
+  --sidebar-primary-foreground: #0b0c0e;
+  --sidebar-accent: #1c1e24;
   --sidebar-accent-foreground: #f4f4f5;
-  --sidebar-border: #24262b;
+  --sidebar-border: #2a2d34;
   --sidebar-ring: #d4ff3a;
 }
 
@@ -91,15 +91,20 @@
   }
 
   html {
-    @apply font-sans;
+    @apply font-sans font-normal;
   }
 
   body {
-    @apply bg-background text-foreground antialiased;
-    background-image:
-      radial-gradient(ellipse 80% 50% at 50% -20%, rgb(212 255 58 / 0.08), transparent),
-      radial-gradient(ellipse 60% 40% at 100% 0%, rgb(36 38 43 / 0.9), transparent);
-    background-attachment: fixed;
+    @apply bg-background text-foreground font-sans font-normal antialiased;
     min-height: 100dvh;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-sans font-semibold;
   }
 }

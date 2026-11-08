@@ -3,7 +3,12 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
-import { AUTH_PATHS, passwordRecoveryRedirectTo } from "@/lib/auth/paths";
+import {
+  AUTH_PATHS,
+  passwordRecoveryRedirectTo,
+  safeAppOrigin,
+  safeAuthNextPath,
+} from "@/lib/auth/paths";
 import { createClient } from "@/lib/supabase/server";
 
 export type AuthActionState = {
@@ -38,9 +43,8 @@ export async function signInWithPassword(
     };
   }
 
-  const { data: claimsData, error: claimsError } =
-    await supabase.auth.getClaims();
-  if (claimsError || !claimsData?.claims?.sub) {
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  if (userError || !userData.user) {
     await supabase.auth.signOut();
     return {
       ok: false,
@@ -48,13 +52,13 @@ export async function signInWithPassword(
     };
   }
 
-  redirect(nextRaw.startsWith("/") && !nextRaw.startsWith("//") ? nextRaw : AUTH_PATHS.app);
+  redirect(safeAuthNextPath(nextRaw, AUTH_PATHS.app));
 }
 
 export async function signOut(): Promise<void> {
   const supabase = await createClient();
   await supabase.auth.signOut();
-  redirect(AUTH_PATHS.login);
+  redirect(`${AUTH_PATHS.login}?signed_out=1`);
 }
 
 export async function requestPasswordReset(
@@ -67,10 +71,9 @@ export async function requestPasswordReset(
   }
 
   const headerStore = await headers();
-  const origin =
-    headerStore.get("origin") ??
-    process.env.NEXT_PUBLIC_SITE_URL ??
-    "http://localhost:3000";
+  const origin = safeAppOrigin(
+    headerStore.get("origin") ?? process.env.NEXT_PUBLIC_SITE_URL,
+  );
 
   const supabase = await createClient();
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -107,9 +110,9 @@ export async function updatePassword(
   }
 
   const supabase = await createClient();
-  const { data: claimsData, error: claimsError } =
-    await supabase.auth.getClaims();
-  if (claimsError || !claimsData?.claims?.sub) {
+  // Auth-server confirmation (not getSession / claims-only).
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  if (userError || !userData.user) {
     return {
       ok: false,
       message:
