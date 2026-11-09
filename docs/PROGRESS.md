@@ -1,30 +1,32 @@
 # Лад — прогрес MVP v1.1
 
 ## Поточний стан
-**Gate 2–6 на `lad` застосовані.** Gate 7 + publish на `lad.best` (користувач підтвердив вхід/вихід/PWA).  
-**Perf-pass (код):** claims-first auth + `cache`; nav pending + loading.  
-**Налаштування (код+БД, 2026-11-09):** профіль, учасники, робочі межі, спільні фінанси (toggle+% → знімок на продаж), рейтинг (ваги + events). Міграція `workspace_finance_rating_settings` на `lad` ✅ (remote version `20261108235219`; локальний файл `20261108234217_…`). Таблиці: `workspace_finance_settings`, `sale_profit_splits`, `workspace_rating_settings`, `rating_events`. Без виплат/боргів. `tsc`/`eslint` ✅.
+**Gate 0–7 ✅.** Publish на `lad.best`; користувач підтвердив вхід/вихід/PWA на Mac і **iPhone (Add to Home Screen)**.  
+**Perf-pass + Settings + частки/рейтинг (знімок, без виплат)** — у коді; міграція finance/rating на `lad` ✅.  
+**Calendar v2 (2026-11-09):** міграція на `lad` ✅; ядро + тести ✅; CRUD + UI ✅; **Realtime client** (`useCalendarRealtime` → `router.refresh`, filter `workspace_id`) ✅ у коді. Gate 6 таблиці unused у UI.
 
-## Gate 7 — перевірено локально (2026-11-08)
+## Gate 7 — закрито (користувач, 2026-11-09)
 | Перевірка | Результат |
 |---|---|
-| `npm run lint` | ✅ |
-| `npm run typecheck` | ✅ |
-| `npm run build` | ✅ (один прогін) |
-| Manifest + icons у `public/` | ✅ код |
-| no-store headers `/app`, `/api` | ✅ код |
-| SW не кешує private/navigate | ✅ код |
-| iPhone Add to Home Screen | ❌ не перевірено на пристрої |
-| MacBook Safari/Chrome PWA UX | ❌ |
-| Повторний повний RLS/фінансовий аудит | ❌ (не запускався) |
-| Vercel deploy / DNS lad.best / Auth URLs remote | ❌ (навмисно) |
+| `npm run lint` / `typecheck` / `build` | ✅ |
+| Manifest + icons, no-store, SW | ✅ |
+| Deploy `lad.best` + Auth URLs | ✅ |
+| MacBook PWA UX | ✅ (користувач) |
+| iPhone Add to Home Screen | ✅ (користувач) |
+| Повторний повний RLS/фінансовий аудит | ⚠️ не окремий прогін; базові gate-тести раніше |
 
-## Gate 6 — перевірено remote (раніше)
-Міграція calendar applied; soft-delete / audit / outsider JWT — ✅ на `[TEST Gate6]`.
+## Gate 6 (v1) — на remote
+Разові `availability_events` + `workspace_schedule_settings`; soft-delete / audit / outsider — ✅ `[TEST Gate6]`.
 
-## Невиконані критичні перевірки (коротко)
-1. Redeploy production після perf-pass (щоб `lad.best` підхопив).
-2. Повторна перевірка TTFB у Network після deploy.
+## Calendar v2 — у роботі
+- Модель: локальні `date` + хвилини доби (Europe/Kyiv), правило повторення одним рядком, винятки по датах, `availability_rules`, типи подій (class/work/shared_work/free/personal).
+- Спільне вікно: free = availability − busy; shared = перетин ≥ 60 хв (налаштування пізніше).
+- Міграція на `lad` ✅: `calendar_events`, `calendar_event_exceptions`, `availability_rules` (+ enum, RLS, realtime publication). Локальний файл `20261109103903_…`.
+- Ядро: `local-intervals`, `recurrence`, `day-model` — `test:unit` ✅.
+- CRUD: `app/actions/calendar-v2.ts` (create / update scope / delete scope / ensure rules).
+- UI: `CalendarApp` тиждень+день, `EventEditor` з live «Перевірка».
+- Realtime: `use-calendar-realtime.ts` на events/exceptions/rules; publication уже в міграції.
+- `tsc`/`eslint` ✅ (Realtime).
 
 ## Наступна дія
-За дозволом: commit + push + Vercel redeploy perf-pass.
+Ручна перевірка: два клієнти / дві вкладки — зміна календаря з’являється без F5; потім commit/push за запитом.
