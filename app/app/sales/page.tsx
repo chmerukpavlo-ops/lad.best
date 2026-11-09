@@ -35,6 +35,15 @@ function formatSoldOn(ymd: string) {
   return `${d}.${m}`;
 }
 
+function salesCountUa(n: number): string {
+  const abs = Math.abs(n) % 100;
+  const last = abs % 10;
+  if (abs > 10 && abs < 20) return `${n} продажів`;
+  if (last === 1) return `${n} продаж`;
+  if (last >= 2 && last <= 4) return `${n} продажі`;
+  return `${n} продажів`;
+}
+
 export default async function SalesPage({
   searchParams,
 }: {
@@ -48,14 +57,30 @@ export default async function SalesPage({
       ? params.status
       : undefined;
 
-  const [result, monthReport] = await Promise.all([
+  const [result, todayReport, weekReport, monthReport] = await Promise.all([
     listSales(statusFilter),
+    getWorkspacePeriodReport("today"),
+    getWorkspacePeriodReport("week"),
     getWorkspacePeriodReport("month"),
   ]);
 
-  const monthProfit = monthReport.ok
-    ? formatUahDisplay(monthReport.summary.resultKopiyky)
-    : "—";
+  const profitCards = [
+    {
+      key: "today" as const,
+      title: "Прибуток за сьогодні",
+      report: todayReport,
+    },
+    {
+      key: "week" as const,
+      title: "Прибуток за тиждень",
+      report: weekReport,
+    },
+    {
+      key: "month" as const,
+      title: "Прибуток за місяць",
+      report: monthReport,
+    },
+  ];
 
   return (
     <section className="mx-auto flex w-full max-w-5xl flex-col gap-5">
@@ -70,15 +95,33 @@ export default async function SalesPage({
         </Button>
       </div>
 
-      <CardSurface className="gap-1.5 p-4 sm:max-w-xs">
-        <p className="text-sm text-muted-foreground">Прибуток за місяць</p>
-        <p className="text-[1.65rem] font-bold tabular-nums tracking-tight">
-          {monthProfit}
-        </p>
-        <p className="text-xs text-muted-foreground">
-          результат = маржа − реклама (без часток)
-        </p>
-      </CardSurface>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        {profitCards.map((card) => {
+          const profit = card.report.ok
+            ? formatUahDisplay(card.report.summary.resultKopiyky)
+            : "—";
+          const count = card.report.ok
+            ? card.report.summary.completedCount
+            : 0;
+          return (
+            <Link
+              key={card.key}
+              href={`/app/statistics?period=${card.key}`}
+              className="block rounded-2xl outline-none transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-primary/50"
+            >
+              <CardSurface className="h-full gap-1.5 p-4">
+                <p className="text-sm text-muted-foreground">{card.title}</p>
+                <p className="text-[1.65rem] font-bold tabular-nums tracking-tight">
+                  {profit}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {card.report.ok ? salesCountUa(count) : "—"}
+                </p>
+              </CardSurface>
+            </Link>
+          );
+        })}
+      </div>
 
       <div className="flex flex-wrap gap-2">
         {(

@@ -34,13 +34,19 @@ function todayKyivDateString(): string {
   }).format(new Date());
 }
 
+/** DB numeric may arrive as number; inputs need strings. */
+function moneyFieldString(raw: unknown, fallback = ""): string {
+  if (raw == null || raw === "") return fallback;
+  return String(raw);
+}
+
 type SharedFieldsProps = {
   members: WorkspaceMemberOption[];
   defaultExecutorId: string;
   values?: {
-    sale_price?: string;
-    cost_price?: string;
-    direct_expenses?: string;
+    sale_price?: string | number;
+    cost_price?: string | number;
+    direct_expenses?: string | number;
     color_text?: string | null;
     size_text?: string | null;
     note?: string | null;
@@ -59,14 +65,21 @@ function SharedSaleFields({
   online,
   showMarginPreview = true,
 }: SharedFieldsProps) {
-  const [salePrice, setSalePrice] = useState(values?.sale_price ?? "");
-  const [costPrice, setCostPrice] = useState(values?.cost_price ?? "");
-  const [expenses, setExpenses] = useState(values?.direct_expenses ?? "0");
+  const [salePrice, setSalePrice] = useState(
+    moneyFieldString(values?.sale_price),
+  );
+  const [costPrice, setCostPrice] = useState(
+    moneyFieldString(values?.cost_price),
+  );
+  const [expenses, setExpenses] = useState(
+    moneyFieldString(values?.direct_expenses, "0"),
+  );
 
   const marginPreview = useMemo(() => {
+    const expensesStr = moneyFieldString(expenses, "0").trim();
     const p = parseUahToKopiyky(salePrice);
     const c = parseUahToKopiyky(costPrice || "0");
-    const e = parseUahToKopiyky(expenses.trim() === "" ? "0" : expenses);
+    const e = parseUahToKopiyky(expensesStr === "" ? "0" : expensesStr);
     if (!p.ok || !c.ok || !e.ok) return null;
     return computeMarginKopiyky(p.kopiyky, c.kopiyky, e.kopiyky);
   }, [salePrice, costPrice, expenses]);
@@ -350,9 +363,9 @@ type EditProps = {
   version: number;
   members: WorkspaceMemberOption[];
   values: {
-    sale_price: string;
-    cost_price: string;
-    direct_expenses: string;
+    sale_price: string | number;
+    cost_price: string | number;
+    direct_expenses: string | number;
     color_text: string | null;
     size_text: string | null;
     note: string | null;
@@ -597,9 +610,9 @@ type CorrectProps = {
   version: number;
   members: WorkspaceMemberOption[];
   values: {
-    sale_price: string;
-    cost_price: string;
-    direct_expenses: string;
+    sale_price: string | number;
+    cost_price: string | number;
+    direct_expenses: string | number;
     color_text: string | null;
     size_text: string | null;
     note: string | null;

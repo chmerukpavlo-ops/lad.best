@@ -176,6 +176,22 @@ describe("day-model shared windows", () => {
     assert.ok(plan.shared.some((w) => w.start === 480 && w.end === 600));
   });
 
+  it("fallbackWindow expands shared beyond seeded rules", () => {
+    const plan = buildDayPlan({
+      ymd: "2026-11-11",
+      memberIds: ["u1", "u2"],
+      rules: [
+        { memberId: "u1", weekday: 3, startMinute: 480, endMinute: 1320 },
+        { memberId: "u2", weekday: 3, startMinute: 480, endMinute: 1320 },
+      ],
+      eventRules: [],
+      exceptions: [],
+      fallbackWindow: { start: 480, end: 1440 },
+      minSharedMinutes: 60,
+    });
+    assert.deepEqual(plan.shared, [{ start: 480, end: 1440 }]);
+  });
+
   it("nearestSharedWindow finds later day", () => {
     const hit = nearestSharedWindow({
       fromYmd: "2026-11-11",

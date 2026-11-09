@@ -41,9 +41,10 @@ export type DayPlan = {
 };
 
 /**
- * availability = weekly rules for weekday ∪ free-type occurrences that day.
- * If no rules and no free events → empty (not whole day).
- * Optional fallbackWindow fills empty rules (e.g. workspace 08–22 during transition).
+ * availability = weekly rules ∪ free events ∪ current workspace day bounds.
+ * fallbackWindow (Settings work hours) is always merged when present, so expanding
+ * the work day widens shared free time even if seeded rules stay at older bounds.
+ * If nothing at all → empty (not whole calendar day).
  */
 export function availabilityForMember(args: {
   memberId: string;
@@ -66,11 +67,8 @@ export function availabilityForMember(args: {
     )
     .map((o) => ({ start: o.startMinute, end: o.endMinute }));
 
-  let base = mergeLocal([...fromRules, ...fromFree]);
-  if (base.length === 0 && args.fallbackWindow) {
-    base = mergeLocal([args.fallbackWindow]);
-  }
-  return base;
+  const fromFallback = args.fallbackWindow ? [args.fallbackWindow] : [];
+  return mergeLocal([...fromRules, ...fromFree, ...fromFallback]);
 }
 
 export function busyForMember(

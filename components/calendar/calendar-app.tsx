@@ -240,12 +240,7 @@ export function CalendarApp({
         >
           День
         </button>
-        {view === "week" ? (
-          <span className="text-sm text-muted-foreground">
-            {weekDays[0]?.dayNum}–{weekDays[6]?.dayNum}{" "}
-            {/* month implied by week */}
-          </span>
-        ) : (
+        {view === "day" ? (
           <div className="flex flex-wrap gap-2">
             {weekDays.map((d) => (
               <button
@@ -263,20 +258,20 @@ export function CalendarApp({
               </button>
             ))}
           </div>
-        )}
+        ) : null}
       </div>
 
       {view === "week" ? (
         <>
           <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
             <span className="inline-flex items-center gap-1.5">
-              <span className="size-2.5 rounded-full bg-[#2a2d34]" /> Учасник 1
+              <span className="size-2.5 rounded-full bg-[#3a404c]" /> Учасник 1
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <span className="size-2.5 rounded-full bg-[#23262d]" /> Учасник 2
+              <span className="size-2.5 rounded-full bg-[#2f343e]" /> Учасник 2
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <span className="size-3 rounded border border-dashed border-primary/70" />{" "}
+              <span className="size-3 rounded border border-dashed border-primary/80 bg-primary/25" />{" "}
               Спільне вікно (від 1 год)
             </span>
           </div>

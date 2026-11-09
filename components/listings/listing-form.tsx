@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useActionState } from "react";
 import { useRouter } from "next/navigation";
 
 import type { ListingActionState } from "@/lib/listings/types";
@@ -21,6 +21,8 @@ const initialState: ListingActionState = {
 
 type ListingFormValues = {
   title?: string;
+  brand?: string | null;
+  list_price?: string | null;
   colors_text?: string | null;
   description?: string | null;
   notes?: string | null;
@@ -51,12 +53,6 @@ export function ListingForm({
   const online = useOnlineStatus();
   const [state, formAction, pending] = useActionState(action, initialState);
 
-  useEffect(() => {
-    if (state.ok && mode === "edit") {
-      router.refresh();
-    }
-  }, [state.ok, state.message, mode, router]);
-
   const messageClass =
     state.code === "conflict"
       ? "text-sm text-amber-300"
@@ -82,7 +78,7 @@ export function ListingForm({
       ) : null}
 
       <div className="flex min-w-0 flex-col gap-2">
-        <Label htmlFor="title">Назва моделі</Label>
+        <Label htmlFor="title">Назва</Label>
         <Input
           id="title"
           name="title"
@@ -93,6 +89,36 @@ export function ListingForm({
           disabled={pending || !online}
           aria-invalid={state.code === "validation" && !state.ok}
         />
+      </div>
+
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <div className="flex min-w-0 flex-col gap-2">
+          <Label htmlFor="brand">Бренд (необовʼязково)</Label>
+          <Input
+            id="brand"
+            name="brand"
+            defaultValue={values?.brand ?? ""}
+            maxLength={120}
+            className="min-h-11 rounded-xl"
+            disabled={pending || !online}
+            placeholder="Nike, Adidas…"
+          />
+        </div>
+        <div className="flex min-w-0 flex-col gap-2">
+          <Label htmlFor="list_price">Ціна орієнтовна (необовʼязково)</Label>
+          <Input
+            id="list_price"
+            name="list_price"
+            inputMode="decimal"
+            defaultValue={values?.list_price ?? ""}
+            className="min-h-11 rounded-xl"
+            disabled={pending || !online}
+            placeholder="3200"
+          />
+          <p className="text-xs text-muted-foreground">
+            Орієнтир у колажі, не ціна продажу.
+          </p>
+        </div>
       </div>
 
       <div className="flex min-w-0 flex-col gap-2">

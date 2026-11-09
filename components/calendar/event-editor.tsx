@@ -253,11 +253,19 @@ export function EventEditor({
   const span = Math.max(dayEndMinute - dayStartMinute, 1);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4">
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4"
+      onClick={onClose}
+      onKeyDown={(e) => {
+        if (e.key === "Escape") onClose();
+      }}
+      role="presentation"
+    >
       <div
         role="dialog"
         aria-modal="true"
         className="flex max-h-[94vh] w-full max-w-4xl flex-col overflow-hidden rounded-t-2xl border border-border bg-[#0b0c0d] sm:rounded-2xl"
+        onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <h2 className="text-lg font-semibold">
@@ -508,7 +516,7 @@ export function EventEditor({
                     return (
                       <div
                         key={`${w.start}-${w.end}`}
-                        className="absolute top-1 bottom-1 rounded-md border border-dashed border-primary/70 bg-primary/15"
+                        className="absolute top-1 bottom-1 rounded-md border border-dashed border-primary/80 bg-primary/25"
                         style={{ left: `${left}%`, width: `${width}%` }}
                       />
                     );

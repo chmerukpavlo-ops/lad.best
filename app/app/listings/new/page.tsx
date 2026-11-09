@@ -1,8 +1,7 @@
-import Link from "next/link";
-
 import { createListing } from "@/app/actions/listings";
 import { ListingForm } from "@/components/listings/listing-form";
 import { CardSurface } from "@/components/ui/card-surface";
+import { DetailBackNav } from "@/components/ui/detail-back-nav";
 
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
@@ -13,22 +12,20 @@ export default async function NewListingPage() {
   return (
     <section className="flex flex-1 flex-col gap-6">
       <div className="space-y-2">
-        <p className="text-sm text-muted-foreground">
-          <Link href="/app/listings" className="hover:text-foreground">
-            Оголошення
-          </Link>
-          <span aria-hidden="true"> / </span>
-          Нове
-        </p>
+        <DetailBackNav
+          href="/app/listings"
+          sectionLabel="Оголошення"
+          currentLabel="Нове"
+        />
         <h1 className="text-3xl font-semibold tracking-tight">
           Нове оголошення
         </h1>
-        <p className="max-w-lg text-sm text-muted-foreground">
-          Обов’язкова лише назва моделі. Кольори, опис і примітки — текстом.
+        <p className="text-sm text-muted-foreground">
+          Обов’язкова лише назва. Кольори, опис і примітки — текстом.
         </p>
       </div>
 
-      <CardSurface className="w-full max-w-lg">
+      <CardSurface className="w-full">
         <ListingForm
           mode="create"
           action={createListing}

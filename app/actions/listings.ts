@@ -4,7 +4,11 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { getMemberGate } from "@/lib/auth/member-gate";
-import type { Listing, ListingActionState } from "@/lib/listings/types";
+import type {
+  Listing,
+  ListingActionState,
+  ListingListItem,
+} from "@/lib/listings/types";
 import { awardRatingPoints } from "@/lib/rating/award";
 import {
   emptyToNull,
@@ -13,9 +17,10 @@ import {
   validateListingInput,
 } from "@/lib/listings/validation";
 import { resolveOptimisticUpdate } from "@/lib/listings/version";
+import { formatKopiykyToUah } from "@/lib/money/kopiyky";
 
 const LISTING_SELECT =
-  "id, workspace_id, title, colors_text, description, notes, publication_url, status, version, created_by, updated_by, created_at, updated_at";
+  "id, workspace_id, title, brand, list_price, colors_text, description, notes, publication_url, status, version, created_by, updated_by, created_at, updated_at";
 
 function formString(formData: FormData, key: string): string {
   const value = formData.get(key);
@@ -59,6 +64,8 @@ export async function createListing(
 
   const validated = validateListingInput({
     title: formString(formData, "title"),
+    brand: formString(formData, "brand"),
+    list_price: formString(formData, "list_price"),
     colors_text: formString(formData, "colors_text"),
     description: formString(formData, "description"),
     notes: formString(formData, "notes"),
@@ -74,6 +81,11 @@ export async function createListing(
     .insert({
       workspace_id: gate.workspaceId,
       title: value.title,
+      brand: emptyToNull(value.brand),
+      list_price:
+        value.list_price_kopiyky == null
+          ? null
+          : formatKopiykyToUah(value.list_price_kopiyky),
       colors_text: emptyToNull(value.colors_text),
       description: emptyToNull(value.description),
       notes: emptyToNull(value.notes),
@@ -113,7 +125,7 @@ export async function createListing(
   revalidatePath("/app");
   revalidatePath("/app/listings");
   revalidatePath("/app/rating");
-  redirect(`/app/listings/${data.id}`);
+  redirect("/app/listings");
 }
 
 export async function updateListing(
@@ -133,6 +145,8 @@ export async function updateListing(
 
   const validated = validateListingInput({
     title: formString(formData, "title"),
+    brand: formString(formData, "brand"),
+    list_price: formString(formData, "list_price"),
     colors_text: formString(formData, "colors_text"),
     description: formString(formData, "description"),
     notes: formString(formData, "notes"),
@@ -147,6 +161,11 @@ export async function updateListing(
     .from("listings")
     .update({
       title: value.title,
+      brand: emptyToNull(value.brand),
+      list_price:
+        value.list_price_kopiyky == null
+          ? null
+          : formatKopiykyToUah(value.list_price_kopiyky),
       colors_text: emptyToNull(value.colors_text),
       description: emptyToNull(value.description),
       notes: emptyToNull(value.notes),
@@ -200,12 +219,7 @@ export async function updateListing(
   revalidatePath("/app/listings");
   revalidatePath(`/app/listings/${listingId}`);
   revalidatePath("/app/rating");
-  return {
-    ok: true,
-    code: "ok",
-    message: "Збережено.",
-    listingId: data.id,
-  };
+  redirect("/app/listings");
 }
 
 export async function setListingStatus(
@@ -266,22 +280,14 @@ export async function setListingStatus(
 
   revalidatePath("/app/listings");
   revalidatePath(`/app/listings/${listingId}`);
-  return {
-    ok: true,
-    code: "ok",
-    message:
-      data.status === "archived"
-        ? "Оголошення в архіві."
-        : "Оголошення знову активне.",
-    listingId: data.id,
-  };
+  redirect("/app/listings");
 }
 
 export async function listListings(
   status: "active" | "archived" | "all" = "active",
 ): Promise<{
   ok: boolean;
-  listings: Listing[];
+  listings: ListingListItem[];
   message?: string;
 }> {
   const gate = await requireMemberClient();
@@ -309,7 +315,35 @@ export async function listListings(
     };
   }
 
-  return { ok: true, listings: (data ?? []) as Listing[] };
+  const rows = (data ?? []) as Listing[];
+  const ids = rows.map((r) => r.id);
+  const lastAdByListing = new Map<string, string>();
+
+  if (ids.length > 0) {
+    const { data: ads } = await gate.supabase
+      .from("ad_payments")
+      .select("listing_id, paid_on")
+      .eq("workspace_id", gate.workspaceId)
+      .eq("status", "valid")
+      .in("listing_id", ids)
+      .order("paid_on", { ascending: false });
+
+    for (const row of ads ?? []) {
+      const lid = row.listing_id as string;
+      const paid = row.paid_on as string;
+      if (!lastAdByListing.has(lid)) {
+        lastAdByListing.set(lid, paid);
+      }
+    }
+  }
+
+  return {
+    ok: true,
+    listings: rows.map((r) => ({
+      ...r,
+      last_ad_paid_on: lastAdByListing.get(r.id) ?? null,
+    })),
+  };
 }
 
 export async function getListing(id: string): Promise<{

@@ -8,6 +8,7 @@ import {
 import { getOrCreateFinanceSettings } from "@/app/actions/settings";
 import { SaleCreateForm } from "@/components/sales/sale-form";
 import { CardSurface } from "@/components/ui/card-surface";
+import { DetailBackNav } from "@/components/ui/detail-back-nav";
 import { requireVerifiedUser } from "@/lib/auth/require-user";
 
 export const dynamic = "force-dynamic";
@@ -41,15 +42,13 @@ export default async function NewSalePage({
       : null;
 
   return (
-    <section className="mx-auto flex w-full max-w-lg flex-col gap-5">
+    <section className="flex w-full flex-col gap-5">
       <div className="space-y-2">
-        <p className="text-sm text-muted-foreground">
-          <Link href="/app/sales" className="hover:text-foreground">
-            Продажі
-          </Link>
-          <span aria-hidden="true"> / </span>
-          Новий
-        </p>
+        <DetailBackNav
+          href="/app/sales"
+          sectionLabel="Продажі"
+          currentLabel="Новий"
+        />
         <h1 className="text-3xl font-semibold tracking-tight">Новий продаж</h1>
         <p className="text-sm text-muted-foreground">
           Спочатку відкритий запис; завершення — окрема операція зі знімком

@@ -18,9 +18,11 @@ describe("validateListingInput", () => {
     }
   });
 
-  it("accepts model with colors and optional fields", () => {
+  it("accepts listing with colors and optional fields", () => {
     const result = validateListingInput({
       title: "Dunk",
+      brand: "Nike",
+      list_price: "3200",
       colors_text: "чорний, білий, 30 інших",
       description: "одна модель, багато кольорів",
       notes: "тест",
@@ -29,6 +31,8 @@ describe("validateListingInput", () => {
     assert.equal(result.ok, true);
     if (result.ok) {
       assert.equal(result.value.title, "Dunk");
+      assert.equal(result.value.brand, "Nike");
+      assert.equal(result.value.list_price_kopiyky, 320_000);
       assert.equal(result.value.colors_text, "чорний, білий, 30 інших");
       assert.equal(result.value.publication_url, "https://example.com/dunk");
     }

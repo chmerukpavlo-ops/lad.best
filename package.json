@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test:unit": "npx --yes tsx --test lib/listings/validation.test.ts lib/money/kopiyky.test.ts lib/ads/validation.test.ts lib/sales/validation.test.ts lib/summary/formulas.test.ts lib/calendar/intervals.test.ts lib/calendar/local-intervals.test.ts lib/calendar/recurrence.test.ts"
+    "test:unit": "npx --yes tsx --test lib/listings/validation.test.ts lib/listings/ad-signal.test.ts lib/money/kopiyky.test.ts lib/ads/validation.test.ts lib/sales/validation.test.ts lib/summary/formulas.test.ts lib/calendar/intervals.test.ts lib/calendar/local-intervals.test.ts lib/calendar/recurrence.test.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

@@ -1,7 +1,10 @@
+import { parseUahToKopiyky } from "@/lib/money/kopiyky";
+
 import type { ListingInput, ListingStatus } from "./types";
 
 export const LISTING_LIMITS = {
   titleMax: 200,
+  brandMax: 120,
   colorsMax: 4000,
   descriptionMax: 8000,
   notesMax: 8000,
@@ -32,19 +35,23 @@ function isAllowedPublicationUrl(url: string): boolean {
 /** Pure form validation — used by server actions and spot tests. */
 export function validateListingInput(raw: {
   title?: unknown;
+  brand?: unknown;
+  list_price?: unknown;
   colors_text?: unknown;
   description?: unknown;
   notes?: unknown;
   publication_url?: unknown;
 }): ListingValidationResult {
   const title = asTrimmedString(raw.title);
+  const brand = asTrimmedString(raw.brand);
+  const list_price = asTrimmedString(raw.list_price);
   const colors_text = asTrimmedString(raw.colors_text);
   const description = asTrimmedString(raw.description);
   const notes = asTrimmedString(raw.notes);
   const publication_url = asTrimmedString(raw.publication_url);
 
   if (!title) {
-    return { ok: false, message: "Вкажіть назву моделі." };
+    return { ok: false, message: "Вкажіть назву." };
   }
   if (title.length > LISTING_LIMITS.titleMax) {
     return {
@@ -52,6 +59,22 @@ export function validateListingInput(raw: {
       message: `Назва занадто довга (макс. ${LISTING_LIMITS.titleMax} символів).`,
     };
   }
+  if (brand.length > LISTING_LIMITS.brandMax) {
+    return {
+      ok: false,
+      message: `Бренд занадто довгий (макс. ${LISTING_LIMITS.brandMax}).`,
+    };
+  }
+
+  let list_price_kopiyky: number | null = null;
+  if (list_price) {
+    const parsed = parseUahToKopiyky(list_price);
+    if (!parsed.ok) {
+      return { ok: false, message: `Ціна: ${parsed.message}` };
+    }
+    list_price_kopiyky = parsed.kopiyky;
+  }
+
   if (colors_text.length > LISTING_LIMITS.colorsMax) {
     return {
       ok: false,
@@ -87,6 +110,9 @@ export function validateListingInput(raw: {
     ok: true,
     value: {
       title,
+      brand,
+      list_price,
+      list_price_kopiyky,
       colors_text,
       description,
       notes,

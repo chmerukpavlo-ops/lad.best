@@ -1,7 +1,6 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useActionState } from "react";
 
 import type { ListingActionState, ListingStatus } from "@/lib/listings/types";
 import {
@@ -36,15 +35,8 @@ export function ListingStatusForm({
   label,
   variant = "outline",
 }: ListingStatusFormProps) {
-  const router = useRouter();
   const online = useOnlineStatus();
   const [state, formAction, pending] = useActionState(action, initialState);
-
-  useEffect(() => {
-    if (state.ok) {
-      router.refresh();
-    }
-  }, [state.ok, state.message, router]);
 
   return (
     <form

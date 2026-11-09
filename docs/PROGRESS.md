@@ -20,7 +20,7 @@
 
 ## Calendar v2 — у роботі
 - Модель: локальні `date` + хвилини доби (Europe/Kyiv), правило повторення одним рядком, винятки по датах, `availability_rules`, типи подій (class/work/shared_work/free/personal).
-- Спільне вікно: free = availability − busy; shared = перетин ≥ 60 хв (налаштування пізніше).
+- Спільне вікно: free = availability − busy; shared = перетин ≥ 60 хв (налаштування пізніше). `fallbackWindow` (години з Settings) **завжди** union у availability — розширення меж дня розширює shared навіть при старих rules. Контраст блоків/сітки піднято (перевірено unit + typecheck).
 - Міграція на `lad` ✅: `calendar_events`, `calendar_event_exceptions`, `availability_rules` (+ enum, RLS, realtime publication). Локальний файл `20261109103903_…`.
 - Ядро: `local-intervals`, `recurrence`, `day-model` — `test:unit` ✅.
 - CRUD: `app/actions/calendar-v2.ts` (create / update scope / delete scope / ensure rules).
@@ -28,5 +28,11 @@
 - Realtime: `use-calendar-realtime.ts` на events/exceptions/rules; publication уже в міграції.
 - `tsc`/`eslint` ✅ (Realtime).
 
+## Оголошення UI + поля (2026-11-09)
+- Міграція `listings_brand_price` на `lad` ✅: опційні `brand`, `list_price`.
+- Список: Назва / Бренд / Ціна / Статус (сигнал реклами: свіжа / пора через **1 день** / без реклами / архів).
+- Фільтр «Пора рекламувати». Без розміру й автора.
+- Форма: назва, бренд, орієнтовна ціна. `tsc`/`test:unit`/`eslint` ✅.
+
 ## Наступна дія
-Ручна перевірка: два клієнти / дві вкладки — зміна календаря з’являється без F5; потім commit/push за запитом.
+Ручна перевірка списку оголошень; commit/push за запитом (календар v2 + оголошення, якщо ще не запушено).

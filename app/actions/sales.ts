@@ -274,7 +274,7 @@ export async function createSale(
         .maybeSingle();
       if (existing?.id) {
         revalidateSalePaths(existing.listing_id, existing.id);
-        redirect(`/app/sales/${existing.id}`);
+        redirect("/app/sales");
       }
     }
     return fail(
@@ -317,7 +317,7 @@ export async function createSale(
   }
 
   revalidateSalePaths(value.listing_id, data.id);
-  redirect(`/app/sales/${data.id}`);
+  redirect("/app/sales");
 }
 
 export async function updateOpenSale(
@@ -417,12 +417,7 @@ export async function updateOpenSale(
   }
 
   revalidateSalePaths(data.listing_id, data.id);
-  return {
-    ok: true,
-    code: "ok",
-    message: "Збережено.",
-    saleId: data.id,
-  };
+  redirect("/app/sales");
 }
 
 export async function completeSaleAction(
@@ -501,13 +496,7 @@ export async function completeSaleAction(
 
   revalidateSalePaths(sale.listing_id, sale.id);
   revalidatePath("/app/rating");
-  return {
-    ok: true,
-    code: "ok",
-    message: "Продаж завершено. Маржу зафіксовано без реклами.",
-    saleId: sale.id,
-    idempotentReplay: sale.version === expectedVersion,
-  };
+  redirect("/app/sales");
 }
 
 export async function cancelOpenSaleAction(
@@ -547,12 +536,7 @@ export async function cancelOpenSaleAction(
   }
 
   revalidateSalePaths(sale.listing_id, sale.id);
-  return {
-    ok: true,
-    code: "ok",
-    message: "Продаж скасовано.",
-    saleId: sale.id,
-  };
+  redirect("/app/sales");
 }
 
 export async function correctCompletedSaleAction(
@@ -619,10 +603,5 @@ export async function correctCompletedSaleAction(
   }
 
   revalidateSalePaths(sale.listing_id, sale.id);
-  return {
-    ok: true,
-    code: "ok",
-    message: "Корекцію завершеного продажу збережено.",
-    saleId: sale.id,
-  };
+  redirect("/app/sales");
 }

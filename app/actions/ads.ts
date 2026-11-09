@@ -377,7 +377,7 @@ export async function createAdPayment(
 
       if (existing?.id) {
         revalidateAdPaths(existing.listing_id, existing.id);
-        redirect(`/app/ads/${existing.id}`);
+        redirect("/app/ads");
       }
     }
 
@@ -402,7 +402,7 @@ export async function createAdPayment(
 
   revalidateAdPaths(value.listing_id, data.id);
   revalidatePath("/app/rating");
-  redirect(`/app/ads/${data.id}`);
+  redirect("/app/ads");
 }
 
 export async function correctAdPayment(
@@ -492,13 +492,5 @@ export async function correctAdPayment(
   }
 
   revalidateAdPaths(data.listing_id, data.id);
-  return {
-    ok: true,
-    code: "ok",
-    message:
-      data.status === "void"
-        ? "Платіж анульовано (з причиною в журналі)."
-        : "Виправлення збережено.",
-    paymentId: data.id,
-  };
+  redirect("/app/ads");
 }

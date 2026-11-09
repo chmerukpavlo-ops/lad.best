@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useId, useState } from "react";
+import { useActionState, useId, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import type { AdActionState, ListingOption, WorkspaceMemberOption } from "@/lib/ads/types";
@@ -198,12 +198,6 @@ export function AdPaymentCorrectForm({
   const router = useRouter();
   const online = useOnlineStatus();
   const [state, formAction, pending] = useActionState(action, initialState);
-
-  useEffect(() => {
-    if (state.ok) {
-      router.refresh();
-    }
-  }, [state.ok, state.message, router]);
 
   const messageClass =
     state.code === "conflict"

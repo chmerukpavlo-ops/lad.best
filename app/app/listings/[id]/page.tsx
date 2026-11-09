@@ -11,6 +11,7 @@ import { ListingForm } from "@/components/listings/listing-form";
 import { ListingStatusForm } from "@/components/listings/listing-status-form";
 import { Button } from "@/components/ui/button";
 import { CardSurface } from "@/components/ui/card-surface";
+import { DetailBackNav } from "@/components/ui/detail-back-nav";
 import { formatUahDisplay } from "@/lib/money/kopiyky";
 
 export const dynamic = "force-dynamic";
@@ -49,13 +50,11 @@ export default async function ListingDetailPage({ params }: PageProps) {
   return (
     <section className="flex flex-1 flex-col gap-6">
       <div className="space-y-2">
-        <p className="text-sm text-muted-foreground">
-          <Link href="/app/listings" className="hover:text-foreground">
-            Оголошення
-          </Link>
-          <span aria-hidden="true"> / </span>
-          {listing.title}
-        </p>
+        <DetailBackNav
+          href="/app/listings"
+          sectionLabel="Оголошення"
+          currentLabel={listing.title}
+        />
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-3xl font-semibold tracking-tight">
             {listing.title}
@@ -76,7 +75,7 @@ export default async function ListingDetailPage({ params }: PageProps) {
         </p>
       </div>
 
-      <CardSurface className="w-full max-w-lg space-y-3">
+      <CardSurface className="w-full space-y-3">
         <h2 className="text-base font-medium">Результат за весь час</h2>
         <p className="text-sm text-muted-foreground">
           Маржа завершених продажів мінус дійсна реклама. Архів не стирає ці
@@ -133,19 +132,23 @@ export default async function ListingDetailPage({ params }: PageProps) {
         </div>
       </CardSurface>
 
-      <CardSurface className="w-full max-w-lg">
+      <CardSurface className="w-full">
         <ListingForm
           key={`${listing.id}-${listing.version}`}
           mode="edit"
           action={updateListing}
           listingId={listing.id}
           version={listing.version}
-          values={listing}
+          values={{
+            ...listing,
+            list_price:
+              listing.list_price != null ? String(listing.list_price) : "",
+          }}
           submitLabel="Зберегти зміни"
         />
       </CardSurface>
 
-      <CardSurface className="w-full max-w-lg space-y-3">
+      <CardSurface className="w-full space-y-3">
         <h2 className="text-base font-medium">Стан</h2>
         <p className="text-sm text-muted-foreground">
           Архів ховає оголошення з активного списку, але не видаляє запис.

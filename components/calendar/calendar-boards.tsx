@@ -104,7 +104,7 @@ export function DayBoardV2({
         {cols.map((m) => (
           <p
             key={m.profile_id}
-            className="truncate text-center text-xs text-muted-foreground"
+            className="truncate text-center text-xs font-bold text-[#c4c6ce]"
           >
             {m.display_name?.trim() || "Учасник"}
           </p>
@@ -114,7 +114,7 @@ export function DayBoardV2({
           {hours.map((m) => (
             <span
               key={m}
-              className="absolute right-1 -translate-y-1/2 text-[10px] tabular-nums text-muted-foreground"
+              className="absolute right-1 -translate-y-1/2 text-[10px] font-bold tabular-nums text-[#c4c6ce]"
               style={{
                 top: `${((m - dayStartMinute) / Math.max(dayEndMinute - dayStartMinute, 1)) * 100}%`,
               }}
@@ -131,12 +131,12 @@ export function DayBoardV2({
           return (
             <div
               key={m.profile_id}
-              className="relative h-[320px] rounded-xl bg-[#101114]"
+              className="relative h-[320px] rounded-xl border border-[#2a2d36] bg-[#14161c]"
             >
               {hours.map((minute) => (
                 <div
                   key={`${m.profile_id}-${minute}`}
-                  className="absolute inset-x-0 border-t border-border/40"
+                  className="absolute inset-x-0 border-t border-[#2e323c]"
                   style={{
                     top: `${((minute - dayStartMinute) / Math.max(dayEndMinute - dayStartMinute, 1)) * 100}%`,
                   }}
@@ -149,7 +149,7 @@ export function DayBoardV2({
                   end={w.end}
                   dayStart={dayStartMinute}
                   dayEnd={dayEndMinute}
-                  className="pointer-events-none border border-dashed border-primary/60 bg-primary/10 text-primary"
+                  className="pointer-events-none border border-dashed border-primary/80 bg-primary/25 text-primary"
                 >
                   Спільне
                 </Block>
@@ -163,8 +163,8 @@ export function DayBoardV2({
                   dayEnd={dayEndMinute}
                   className={
                     occ.eventType === "free"
-                      ? "border border-dashed border-primary/50 bg-primary/10 text-primary"
-                      : "bg-[#2a2d34] text-foreground hover:bg-[#32353d]"
+                      ? "border border-dashed border-primary/70 bg-primary/20 text-primary"
+                      : "bg-[#3a404c] text-foreground hover:bg-[#454c5a]"
                   }
                   onClick={() => onSelectOccurrence(occ)}
                 >
@@ -219,7 +219,7 @@ export function WeekBoardV2({
             key={d.ymd}
             type="button"
             onClick={() => onSelectDay(d.ymd)}
-            className="truncate py-1 text-center text-xs font-medium text-muted-foreground hover:text-foreground"
+            className="truncate py-1 text-center text-xs font-bold text-[#c4c6ce] hover:text-foreground"
           >
             {d.label} {d.dayNum}
           </button>
@@ -229,7 +229,7 @@ export function WeekBoardV2({
           {hours.map((m) => (
             <span
               key={m}
-              className="absolute right-0 -translate-y-1/2 text-[10px] tabular-nums text-muted-foreground"
+              className="absolute right-0 -translate-y-1/2 text-[10px] font-bold tabular-nums text-[#c4c6ce]"
               style={{ top: `${((m - dayStartMinute) / span) * 100}%` }}
             >
               {hhMmFromMinute(m)}
@@ -243,12 +243,12 @@ export function WeekBoardV2({
           return (
             <div
               key={d.ymd}
-              className="relative h-[420px] rounded-lg bg-[#101114]"
+              className="relative h-[420px] rounded-lg border border-[#2a2d36] bg-[#14161c]"
             >
               {hours.map((minute) => (
                 <div
                   key={`${d.ymd}-${minute}`}
-                  className="absolute inset-x-0 border-t border-border/30"
+                  className="absolute inset-x-0 border-t border-[#2e323c]"
                   style={{
                     top: `${((minute - dayStartMinute) / span) * 100}%`,
                   }}
@@ -261,7 +261,7 @@ export function WeekBoardV2({
                   end={w.end}
                   dayStart={dayStartMinute}
                   dayEnd={dayEndMinute}
-                  className="pointer-events-none border border-dashed border-primary/50 bg-primary/10"
+                  className="pointer-events-none border border-dashed border-primary/80 bg-primary/25"
                 />
               ))}
               {occs.map((occ) => {
@@ -269,12 +269,12 @@ export function WeekBoardV2({
                 const mineB = b && occ.participants.includes(b);
                 const tone =
                   occ.eventType === "free"
-                    ? "border border-dashed border-primary/40 bg-primary/10"
+                    ? "border border-dashed border-primary/70 bg-primary/20"
                     : mineA && mineB
-                      ? "bg-[#3a3d45]"
+                      ? "bg-[#4a5160]"
                       : mineA
-                        ? "bg-[#2a2d34]"
-                        : "bg-[#23262d]";
+                        ? "bg-[#3a404c]"
+                        : "bg-[#2f343e]";
                 return (
                   <Block
                     key={`${occ.eventId}-${occ.occurrenceDate}-${occ.startMinute}`}

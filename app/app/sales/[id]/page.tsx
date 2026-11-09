@@ -16,6 +16,7 @@ import {
   SaleEditForm,
 } from "@/components/sales/sale-form";
 import { CardSurface } from "@/components/ui/card-surface";
+import { DetailBackNav } from "@/components/ui/detail-back-nav";
 import {
   dbAmountToKopiyky,
   dbSignedAmountToKopiyky,
@@ -94,16 +95,12 @@ export default async function SaleDetailPage({ params }: PageProps) {
   }
 
   return (
-    <section className="mx-auto flex w-full max-w-lg flex-col gap-5">
-      <div className="space-y-2">
-        <p className="text-sm text-muted-foreground">
-          <Link href="/app/sales" className="hover:text-foreground">
-            Продажі
-          </Link>
-          <span aria-hidden="true"> / </span>
-          Деталі
-        </p>
-      </div>
+    <section className="flex w-full flex-col gap-5">
+      <DetailBackNav
+        href="/app/sales"
+        sectionLabel="Продажі"
+        currentLabel="Деталі"
+      />
 
       <CardSurface className="gap-0 p-0">
         <div className="flex items-start justify-between gap-3 border-b border-border/80 px-4 py-4 sm:px-5">

@@ -7,6 +7,7 @@ import {
 } from "@/app/actions/ads";
 import { AdPaymentCreateForm } from "@/components/ads/ad-payment-form";
 import { CardSurface } from "@/components/ui/card-surface";
+import { DetailBackNav } from "@/components/ui/detail-back-nav";
 import { requireVerifiedUser } from "@/lib/auth/require-user";
 
 export const dynamic = "force-dynamic";
@@ -28,15 +29,13 @@ export default async function NewAdPaymentPage({
   ]);
 
   return (
-    <section className="mx-auto flex w-full max-w-lg flex-col gap-5">
+    <section className="flex w-full flex-col gap-5">
       <div className="space-y-2">
-        <p className="text-sm text-muted-foreground">
-          <Link href="/app/ads" className="hover:text-foreground">
-            Реклама
-          </Link>
-          <span aria-hidden="true"> / </span>
-          Новий платіж
-        </p>
+        <DetailBackNav
+          href="/app/ads"
+          sectionLabel="Реклама"
+          currentLabel="Новий платіж"
+        />
         <h1 className="text-3xl font-semibold tracking-tight">
           Додати платіж
         </h1>
